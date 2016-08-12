@@ -52,12 +52,24 @@ defineModule(sim, list(
 
 doEvent.fireSense_SpreadPredict = function(sim, eventTime, eventType, debug = FALSE) {
   if (eventType == "init") {
-
     sim <- sim$fireSense_SpreadPredictInit(sim)
 
   } else if (eventType == "run") {
-    
     sim <- sim$fireSense_SpreadPredictRun(sim)
+
+  } else if (eventType == "save") {
+    # ! ----- EDIT BELOW ----- ! #
+    # do stuff for this event
+    
+    # e.g., call your custom functions/methods here
+    # you can define your own methods below this `doEvent` function
+    
+    # schedule future event(s)
+    
+    # e.g.,
+    # sim <- scheduleEvent(sim, time(sim) + increment, "fireSense_FrequencyPredict", "save")
+    
+    # ! ----- STOP EDITING ----- ! #
     
   } else {
     warning(paste("Undefined event type: '", current(sim)[1, "eventType", with = FALSE],
