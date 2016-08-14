@@ -6,8 +6,8 @@ library(SpaDES)
   #   modules = list("fireSense_SpreadPredict"),
   #   paths = list(modulePath = " # replace with empty string instead"),
   #   inputs = data.frame(
-  #     files = c("Z:/fireSense_SpreadFitted.RData", "Z:/beta.tif", "Z:/theta.tif"),
-  #     functions = c("load", "raster", "raster"),
+  #     files = c("Z:/fireSense_SpreadFitted.rds", "Z:/beta.tif", "Z:/theta.tif"),
+  #     functions = c("readRDS", "raster", "raster"),
   #     package = c("base", "raster", "raster"),
   #     stringsAsFactors = FALSE)
   # )
@@ -18,10 +18,10 @@ library(SpaDES)
     modules = list("fireSense_SpreadPredict"),
     paths = list(modulePath = " # replace with empty string instead"),
     inputs = data.frame(
-      files = c("Z:/fireSense_SpreadFitted.RData", "Z:/beta__STACK.tif", "Z:/theta__STACK.tif"),
-      functions = c("load", "stack", "stack"),
+      files = c("Z:/fireSense_SpreadFitted.rds", "Z:/beta__STACK.tif", "Z:/theta__STACK.tif"),
+      functions = c("readRDS", "stack", "stack"),
       package = c("base", "raster", "raster"),
-      objectName = c("fires", "beta", "theta"),
+      objectName = c("fireSense_SpreadFitted", "beta", "theta"),
       stringsAsFactors = FALSE)
   )
 

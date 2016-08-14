@@ -15,7 +15,7 @@ defineModule(sim, list(
   reqdPkgs = list("magrittr", "raster"),
   parameters = rbind(
     #defineParameter("paramName", "paramClass", default, min, max, "parameter description")),
-    defineParameter(name = "data", class = "character", default = NA,
+    defineParameter(name = "data", class = "character", default = NULL,
       desc = "optional. A character vector indicating the names of objects present in the simList
               environment, in which to look for variables with which to predict. Objects can be 
               named lists of RasterLayers, or RasterStacks (for time series). However, objects of
@@ -40,8 +40,8 @@ defineModule(sim, list(
     stringsAsFactors = FALSE
   ),
   outputObjects = data.frame(
-    objectName = "fireSense_SpreadPredictProb",
-    objectClass = "ANY",
+    objectName = "fireSense_SpreadPredict",
+    objectClass = "raster",
     other = NA_character_,
     stringsAsFactors = FALSE
   )
@@ -67,7 +67,7 @@ doEvent.fireSense_SpreadPredict = function(sim, eventTime, eventType, debug = FA
     # schedule future event(s)
     
     # e.g.,
-    # sim <- scheduleEvent(sim, time(sim) + increment, "fireSense_FrequencyPredict", "save")
+    # sim <- scheduleEvent(sim, time(sim) + increment, "fireSense_SpreadPredict", "save")
     
     # ! ----- STOP EDITING ----- ! #
     
@@ -107,15 +107,15 @@ fireSense_SpreadPredictRun <- function(sim) {
   envData <- new.env(parent = envir(sim))
   on.exit(rm(envData))
   list2env(as.list(envir(sim)), envir = envData)
-  
-  if (!is.na(p(sim)$data[1]))
+
+  if (!is.null(p(sim)$data))
     lapply(p(sim)$data, function(x, envData) if (is.list(sim[[x]])) list2env(sim[[x]], envir = envData), envData = envData)
 
   ## In case there is a response in the formula remove it
   terms <- sim$fireSense_SpreadFitted$formula %>% terms.formula %>% delete.response
   
   ## Mapping variables names to data
-  if (!is.na(p(sim)$mapping[1])) {
+  if (!is.null(p(sim)$mapping)) {
     
     for (i in 1:length(p(sim)$mapping)) {
       
@@ -127,11 +127,11 @@ fireSense_SpreadPredictRun <- function(sim) {
   }
   
   formula <- reformulate(attr(terms, "term.labels"), intercept = attr(terms, "intercept"))
-  allVars <- all.vars(formula)
+  allxy <- all.vars(formula)
   
-  if (all(unlist(lapply(allVars, function(x) is(envData[[x]], "RasterStack"))))) {
+  if (all(unlist(lapply(allxy, function(x) is(envData[[x]], "RasterStack"))))) {
 
-    sim$fireSense_SpreadPredictProb <- mget(allVars, envir = envData, inherits = FALSE) %>%
+    sim$fireSense_SpreadPredictProb <- mget(allxy, envir = envData, inherits = FALSE) %>%
       lapply(unstack) %>%
       c(list(FUN = function(...) stack(list(...)), SIMPLIFY = FALSE)) %>%
       do.call("mapply", args = .) %>%
@@ -139,30 +139,40 @@ fireSense_SpreadPredictRun <- function(sim) {
         predict(x, model = formula, fun = fireSense_SpreadPredictRaster, na.rm = TRUE, par = unlist(sim$fireSense_SpreadFitted$coef))) %>%
       stack
 
-  } else if (all(unlist(lapply(allVars, function(x) is(envData[[x]], "RasterLayer"))))) {
+  } else if (all(unlist(lapply(allxy, function(x) is(envData[[x]], "RasterLayer"))))) {
 
-    sim$fireSense_SpreadPredictProb <- mget(allVars, envir = envData, inherits = FALSE) %>%
+    sim$fireSense_SpreadPredictProb <- mget(allxy, envir = envData, inherits = FALSE) %>%
       stack %>%
       predict(model = formula, fun = fireSense_SpreadPredictRaster, na.rm = TRUE, par = unlist(sim$fireSense_SpreadFitted$coef))
     
   } else {
   
-    varsExist <- allVars %in% ls(envData)
-    varsClass <- unlist(lapply(allVars, function(x) is(envData[[x]], "RasterLayer") || is(envData[[x]], "RasterStack")))
+    varsExist <- allxy %in% ls(envData)
+    varsClass <- unlist(lapply(allxy, function(x) is(envData[[x]], "RasterLayer") || is(envData[[x]], "RasterStack")))
     
     if (any(!varsExist)) {
-      stop(paste0("fireSense_SpreadPredict> Variable '", allVars[which(!varsExist)[1L]], "' not found."))
+      stop(paste0("fireSense_SpreadPredict> Variable '", allxy[which(!varsExist)[1L]], "' not found."))
     } else if (any(varsClass)) {
-      stop("fireSense_SpreadPredict> Variables are not of the same class.")
+      stop("fireSense_SpreadPredict> Data objects are not of the same class (e.g. data.frames).")
     } else {
-      stop(paste0("fireSense_SpreadPredict> Variable '", allVars[which(!varsClass)[1L]], "' is not a RasterLayer or a RasterStack."))
+      stop(paste0("fireSense_SpreadPredict> Variable '", allxy[which(!varsClass)[1L]], "' is not a RasterLayer or a RasterStack."))
     }
   }
-
 
   if (!is.na(p(sim)$intervalRunModule))
     sim <- scheduleEvent(sim, time(sim) + p(sim)$intervalRunModule, "fireSense_SpreadFit", "run")
   
   sim
+
 }
 
+
+### template for save events
+fireSense_SpreadPredictSave <- function(sim) {
+  # ! ----- EDIT BELOW ----- ! #
+  # do stuff for this event
+  sim <- saveFiles(sim)
+  
+  # ! ----- STOP EDITING ----- ! #
+  return(invisible(sim))
+}
