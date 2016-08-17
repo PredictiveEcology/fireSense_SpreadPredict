@@ -120,7 +120,7 @@ fireSense_SpreadPredictRun <- function(sim) {
     for (i in 1:length(p(sim)$mapping)) {
       
       attr(terms, "term.labels") <- gsub(pattern = names(p(sim)$mapping[i]),
-                                         replacement = p(sim)$mapping[i], x = attr(terms, "term.labels"))
+                                         replacement = p(sim)$mapping[[i]], x = attr(terms, "term.labels"))
       
     }
     
