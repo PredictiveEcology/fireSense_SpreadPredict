@@ -16,21 +16,21 @@ defineModule(sim, list(
   parameters = rbind(
     #defineParameter("paramName", "paramClass", default, min, max, "parameter description")),
     defineParameter(name = "data", class = "character", default = NULL,
-      desc = "optional. A character vector indicating the names of objects present in the simList
-              environment, in which to look for variables with which to predict. Objects can be 
-              named lists of RasterLayers, or RasterStacks (for time series). However, objects of
-              different classes cannot be mixed. For example, variables cannot be searched 
-              simultaneously within an object of class RasterLayer and within an object of class
-              RasterStack. If omitted, or if variables are not found in data objects, variables
-              are searched in the simList environment."),
-    defineParameter(name = "mapping", class = "character", default = NULL,
-      desc = "optional. Named character vector to map variable names in the formula to those in
-              data objects. Names of unmapped variables are used directly to look for variables in
-              data objects or in the simList environment."),
+      desc = "optional. A character vector indicating the names of objects in the
+              simList environment in which to look for variables in the model. 
+              Data objects can be named lists of RasterLayers or RasterStacks
+              (for time series), but should all be of one unique class, e.g. 
+              RasterLayer. If omitted, or if variables are not found in data
+              objects, variables are searched in the simList environment."),
+    defineParameter(name = "mapping", class = "character, list", default = NULL,
+      desc = "optional. Named character vector or list mapping some or all 
+              variables in the model to those in data objects."),
     defineParameter(name = "initialRunTime", class = "numeric", default = start(sim),
-      desc = "optional. Simulation time at which to start this module. Defaults to simulation start time."),
+      desc = "optional. Simulation time at which to start this module. Defaults 
+              to simulation start time."),
     defineParameter(name = "intervalRunModule", class = "numeric", default = NA,
-      desc = "optional. Interval in simulation time units between two runs of this module.")
+      desc = "optional. Interval in simulation time units between two runs of
+              this module.")
   ),
   inputObjects = data.frame(
     objectName = "fireSense_SpreadFitted",
@@ -93,7 +93,7 @@ fireSense_SpreadPredictInit <- function(sim) {
 
 fireSense_SpreadPredictRun <- function(sim) {
   
-  ## Toolbox: set of functions used internally by fireSense_SpreadFitRun
+  ## Toolbox: set of functions used internally by fireSense_SpreadPredictRun
     ## Raster predict function
       fireSense_SpreadPredictRaster <- function(model, data, par) {
         
@@ -160,7 +160,7 @@ fireSense_SpreadPredictRun <- function(sim) {
   }
 
   if (!is.na(p(sim)$intervalRunModule))
-    sim <- scheduleEvent(sim, time(sim) + p(sim)$intervalRunModule, "fireSense_SpreadFit", "run")
+    sim <- scheduleEvent(sim, time(sim) + p(sim)$intervalRunModule, "fireSense_SpreadPredict", "run")
   
   sim
 
