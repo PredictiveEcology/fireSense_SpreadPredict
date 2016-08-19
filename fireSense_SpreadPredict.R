@@ -136,14 +136,14 @@ fireSense_SpreadPredictRun <- function(sim) {
       c(list(FUN = function(...) stack(list(...)), SIMPLIFY = FALSE)) %>%
       do.call("mapply", args = .) %>%
       lapply(function(x) 
-        predict(x, model = formula, fun = fireSense_SpreadPredictRaster, na.rm = TRUE, par = unlist(sim$fireSense_SpreadFitted$coef))) %>%
+        predict(x, model = formula, fun = fireSense_SpreadPredictRaster, na.rm = TRUE, par = sim$fireSense_SpreadFitted$coef)) %>%
       stack
 
   } else if (all(unlist(lapply(allxy, function(x) is(envData[[x]], "RasterLayer"))))) {
 
     sim$fireSense_SpreadPredictProb <- mget(allxy, envir = envData, inherits = FALSE) %>%
       stack %>%
-      predict(model = formula, fun = fireSense_SpreadPredictRaster, na.rm = TRUE, par = unlist(sim$fireSense_SpreadFitted$coef))
+      predict(model = formula, fun = fireSense_SpreadPredictRaster, na.rm = TRUE, par = sim$fireSense_SpreadFitted$coef)
     
   } else {
   
