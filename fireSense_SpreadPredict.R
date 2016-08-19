@@ -2,7 +2,7 @@
 # are put into the simList. To use objects and functions, use sim$xxx.
 defineModule(sim, list(
   name = "fireSense_SpreadPredict",
-  description = "Make predictions from a model fitted using fireSense_SpreadFit.",
+  description = "Predict a probability surface of fire spread probilities from a model fitted using fireSense_SpreadFit.",
   keywords = c("fire spread", "fireSense", "predict"),
   authors = c(person("Jean", "Marchal", email = "jean.d.marchal@gmail.com", role = c("aut", "cre"))),
   childModules = character(),

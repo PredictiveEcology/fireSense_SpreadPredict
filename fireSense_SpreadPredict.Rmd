@@ -1,78 +1,109 @@
 ---
 title: "fireSense_SpreadPredict"
-author: "Module Author"
-date: "01 August 2016"
-output: pdf_document
+author: "Jean Marchal"
+date: "August 2016"
+output:
+  html_document: default
+  pdf_document: default
 ---
 
+
 # Overview
+Predict a probability surface of fire spread probilities from a model fitted using fireSense_SpreadFit.
 
-Provide an overview of what the module does / how to use the module.
+# Download the module
+```{r download module, eval = FALSE, echo = TRUE}
+library(SpaDES)
 
-Module documentation should be written so that others can use your module.
-This is a template for module documentation, and should be changed to reflect your module.
+moduleName <- "fireSense_SpreadPredict"
 
-## RMarkdown
+workingDirectory <- tempdir() # Change this to a place you would like to put the model, if desired.
 
-RMarkdown syntax allows R code, outputs, and figures to be rendered in the documentation.
-
-For help writing in RMarkdown, see http://rmarkdown.rstudio.com/.
+downloadModule(moduleName, path = workingDirectory)
+```
 
 # Usage
+## Module parameters
+Name|Default|Description
+----|:-------:|---------------------------------------------------------------------
+data|NULL|optional. A character vector indicating the names of objects in the simList environment in which to look for variables in the model. Data objects can be named lists of RasterLayers or RasterStacks (for time series), but should all be of one unique class, e.g. RasterLayer. If omitted, or if variables are not found in data objects, variables are searched in the simList environment.
+mapping|NULL|optional. Named character vector or list mapping some or all variables in the model to those in data objects.
+initialRunTime|start(sim)|optional. Simulation time at which to start this module. Defaults to simulation start time.
+intervalRunModule|NA|optional. Interval in simulation time units between two runs of this module.
+|||
 
-```{r module_usage}
+## Usage example
+```{r module_usage, eval = FALSE}
 library(SpaDES)
+
+# Packages required by the module
 library(magrittr)
+library(raster)
 
-inputDir <- file.path(tempdir(), "inputs") %>% checkPath(create = TRUE)
-outputDir <- file.path(tempdir(), "outputs")
-times <- list(start = 0, end = 10)
+set.seed(1)
+
+# Create a random map of weather
+nx <- ny <- 100L
+weather2 <- raster(nrows = ny, ncols = nx, xmn = -nx/2, xmx = nx/2, ymn = -ny/2, ymx = ny/2) %>%
+  gaussMap(scale = 300, var = 0.03, speedup = nx/5e2, inMemory = TRUE)
+
+# Create a typical output of fireSense_SpreadFit
+fireSense_SpreadFitted <- list(
+  formula = ~ weather - 1,
+  coef = setNames(c(0.3, 3, 0.1, 1.5, 0.01),
+                  c("A", "B", "D", "G", "weather")) # A, B, D, G are parameters of the logistic function
+)
+class(fireSense_SpreadFitted) <- "fireSense_SpreadFit"
+
+#outputDir <- file.path(tempdir(), "outputs")
+times <- list(start = 1, end = 1)
 parameters <- list(
-  .globals = list(burnStats = "nPixelsBurned"),
-  #.progress = list(type = "text", interval = 1), # for a progress bar
-  ## If there are further modules, each can have its own set of parameters:
-  #module1 = list(param1 = value1, param2 = value2),
-  #module2 = list(param1 = value1, param2 = value2)
-)
-modules <- list("fireSense_SpreadPredict")
-objects <- list()
-paths <- list(
-  cachePath = file.path(outputDir, "cache"),
-  modulePath = file.path(".."),
-  inputPath = inputDir,
-  outputPath = outputDir
+  fireSense_SpreadPredict = list(
+    mapping = list(weather2 = "weather"), # One can use mapping to map variables in data to those
+                                          # in formulas of the fitted object.
+                                          # Here weather2 (data) is mapped to weather (formula).
+  )
 )
 
-mySim <- simInit(times = times, params = parameters, modules = modules,
-                 objects = objects, paths = paths)
+modules <- list("fireSense_SpreadPredict")
+objects <- c("dataObject", "fireSense_SpreadFitted") # Pass objects found in the global environment to the simList environment
+paths <- list(
+  # cachePath = file.path(outputDir, "cache"),
+  modulePath = file.path("~/Documents/GitHub/McIntire-lab/modulesPrivate/") ## TODO: change this to tempdir()
+  # inputPath = inputDir,
+  # outputPath = outputDir
+)
+ 
+## TODO: stacks
+
+mySim <- simInit(times = times, params = parameters, modules = modules, objects = objects, paths = paths)
 
 spades(mySim)
 ```
 
 # Events
+Events are scheduled as follows:
 
-Describe what happens for each event type.
-
-## Plotting
-
-Write what is plotted.
+- Module initiation
+- Make predictions
 
 ## Saving
-
-Write what is saved.
+TODO: Write what is saved. (there is currently nothing saved, but this may change in the future)
 
 # Data dependencies
-
 ## Input data
-
-How to obtain input data, and a description of the data required by the module.
-If `sourceURL` is specified, `downloadData("fireSense_SpreadPredict", "path/to/modules/dir")` may be sufficient.
+- An object of class fireSense_SizeFit, i.e. created with the fireSense_SizeFit module.
+- An or several objects of class data.frame, or named lists of RasterLayers in which to look for variables with which to predict.
 
 ## Output data
+An object whose class depends on those in input:
 
-Description of the module outputs.
+Input object class | Output object class
+:-:|:-:
+raster | raster
+stack | stack
+||
 
 # Links to other modules
-
-Describe any anticipated linkages to other modules.
+Predictions made with this module can be used to feed the fire spread component of landscape fire models (e.g. fireSense).
 
