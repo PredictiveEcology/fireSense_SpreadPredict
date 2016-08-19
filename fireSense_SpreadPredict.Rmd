@@ -7,7 +7,6 @@ output:
   pdf_document: default
 ---
 
-
 # Overview
 Predict a probability surface of fire spread probilities from a model fitted using fireSense_SpreadFit.
 
@@ -26,14 +25,14 @@ downloadModule(moduleName, path = workingDirectory)
 ## Module parameters
 Name|Default|Description
 ----|:-------:|---------------------------------------------------------------------
-data|NULL|optional. A character vector indicating the names of objects in the simList environment in which to look for variables in the model. Data objects can be named lists of RasterLayers or RasterStacks (for time series), but should all be of one unique class, e.g. RasterLayer. If omitted, or if variables are not found in data objects, variables are searched in the simList environment.
-mapping|NULL|optional. Named character vector or list mapping some or all variables in the model to those in data objects.
-initialRunTime|start(sim)|optional. Simulation time at which to start this module. Defaults to simulation start time.
-intervalRunModule|NA|optional. Interval in simulation time units between two runs of this module.
+`data`|`NULL`|optional. A character vector indicating the names of objects in the `simList` environment in which to look for variables in the model. Data objects can be named lists of `RasterLayer` or `RasterStack` (for time series), but should all be of one unique class, e.g. `RasterLayer`. If omitted, or if variables are not found in data objects, variables are searched in the `simList` environment.
+`mapping`|`NULL`|optional. Named character vector or list mapping some or all variables in the model to those in data objects.
+`initialRunTime`|`start(sim)`|optional. Simulation time at which to start this module. Defaults to simulation start time.
+`intervalRunModule`|`NA`|optional. Interval in simulation time units between two runs of this module.
 |||
 
 ## Usage example
-```{r module_usage, eval = FALSE}
+```{r module usage example, eval = FALSE}
 library(SpaDES)
 
 # Packages required by the module
@@ -56,7 +55,7 @@ fireSense_SpreadFitted <- list(
 class(fireSense_SpreadFitted) <- "fireSense_SpreadFit"
 
 #outputDir <- file.path(tempdir(), "outputs")
-times <- list(start = 1, end = 1)
+times <- list(start = 1, end = 1, timeunit = "year")
 parameters <- list(
   fireSense_SpreadPredict = list(
     mapping = list(weather2 = "weather"), # One can use mapping to map variables in data to those
@@ -92,16 +91,16 @@ TODO: Write what is saved. (there is currently nothing saved, but this may chang
 
 # Data dependencies
 ## Input data
-- An object of class fireSense_SizeFit, i.e. created with the fireSense_SizeFit module.
-- An or several objects of class data.frame, or named lists of RasterLayers in which to look for variables with which to predict.
+- An object of class `fireSense_SizeFit`, i.e. created with the fireSense_SizeFit module.
+- An or several objects of class `RasterLayer` or `RasterStack`, or named lists of `RasterLayer` or `RasterStack` in which to look for variables with which to predict.
 
 ## Output data
 An object whose class depends on those in input:
 
 Input object class | Output object class
 :-:|:-:
-raster | raster
-stack | stack
+`RasterLayer` | `RasterLayer`
+`RasterStack` | `RasterStack`
 ||
 
 # Links to other modules
