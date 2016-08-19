@@ -108,7 +108,7 @@ fireSense_SpreadPredictRun <- function(sim) {
   on.exit(rm(envData))
   list2env(as.list(envir(sim)), envir = envData)
 
-  if (!is.null(p(sim)$data))
+  if (!is.null(p(sim)$data)) ## Handling data arg
     lapply(p(sim)$data, function(x, envData) if (is.list(sim[[x]])) list2env(sim[[x]], envir = envData), envData = envData)
 
   ## In case there is a response in the formula remove it
