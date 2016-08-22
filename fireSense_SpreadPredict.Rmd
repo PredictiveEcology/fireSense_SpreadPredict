@@ -16,7 +16,7 @@ library(SpaDES)
 
 moduleName <- "fireSense_SpreadPredict"
 
-workingDirectory <- tempdir() # Change this to a place you would like to put the model, if desired.
+workingDirectory <- tempdir() # Change this to a place you would like to put the module, if desired.
 
 downloadModule(moduleName, path = workingDirectory)
 ```
