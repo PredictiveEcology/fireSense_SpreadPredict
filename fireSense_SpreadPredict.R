@@ -153,9 +153,9 @@ fireSense_SpreadPredictRun <- function(sim) {
     if (any(!exist)) {
       stop(paste0("fireSense_SpreadPredict> Variable '", allxy[which(!exist)[1L]], "' not found."))
     } else if (any(class)) {
-      stop("fireSense_SpreadPredict> Data objects are not of the same class (e.g. data.frames).")
+      stop("fireSense_SpreadPredict> At least one of the data objects is not a RasterLayer.")
     } else {
-      stop(paste0("fireSense_SpreadPredict> Variable '", allxy[which(!class)[1L]], "' is not a RasterLayer or a RasterStack."))
+      stop(paste0("fireSense_SpreadPredict> Variable '", allxy[which(!class)[1L]], "' does not match a RasterLayer."))
     }
   }
 
