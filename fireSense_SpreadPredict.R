@@ -129,17 +129,7 @@ fireSense_SpreadPredictRun <- function(sim) {
   formula <- reformulate(attr(terms, "term.labels"), intercept = attr(terms, "intercept"))
   allxy <- all.vars(formula)
   
-  if (all(unlist(lapply(allxy, function(x) is(envData[[x]], "RasterStack"))))) {
-
-    sim$fireSense_SpreadPredictProb <- mget(allxy, envir = envData, inherits = FALSE) %>%
-      lapply(unstack) %>%
-      c(list(FUN = function(...) stack(list(...)), SIMPLIFY = FALSE)) %>%
-      do.call("mapply", args = .) %>%
-      lapply(function(x) 
-        predict(x, model = formula, fun = fireSense_SpreadPredictRaster, na.rm = TRUE, par = sim$fireSense_SpreadFitted$coef)) %>%
-      stack
-
-  } else if (all(unlist(lapply(allxy, function(x) is(envData[[x]], "RasterLayer"))))) {
+  if (all(unlist(lapply(allxy, function(x) is(envData[[x]], "RasterLayer"))))) {
 
     sim$fireSense_SpreadPredictProb <- mget(allxy, envir = envData, inherits = FALSE) %>%
       stack %>%
@@ -148,7 +138,7 @@ fireSense_SpreadPredictRun <- function(sim) {
   } else {
   
     exist <- allxy %in% ls(envData)
-    class <- unlist(lapply(allxy, function(x) is(envData[[x]], "RasterLayer") || is(envData[[x]], "RasterStack")))
+    class <- unlist(lapply(allxy, function(x) is(envData[[x]], "RasterLayer")))
     
     if (any(!exist)) {
       stop(paste0("fireSense_SpreadPredict> Variable '", allxy[which(!exist)[1L]], "' not found."))
