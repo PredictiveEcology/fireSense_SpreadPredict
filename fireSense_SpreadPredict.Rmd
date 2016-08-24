@@ -48,7 +48,7 @@ weather2 <- raster(nrows = ny, ncols = nx, xmn = -nx/2, xmx = nx/2, ymn = -ny/2,
 
 # Create a typical output of fireSense_SpreadFit
 fireSense_SpreadFitted <- list(
-  formula = ~ weather - 1,
+  formula = ~ weather2 - 1,
   coef = setNames(c(0.3, 3, 0.1, 1.5, 0.01),
                   c("A", "B", "D", "G", "weather")) # A, B, D, G are parameters of the logistic function
 )
@@ -58,22 +58,20 @@ class(fireSense_SpreadFitted) <- "fireSense_SpreadFit"
 times <- list(start = 1, end = 1, timeunit = "year")
 parameters <- list(
   fireSense_SpreadPredict = list(
-    mapping = list(weather2 = "weather"), # One can use mapping to map variables in data to those
-                                          # in formulas of the fitted object.
-                                          # Here weather2 (data) is mapped to weather (formula).
+    mapping = list(weather2 = "weather"), # One can use mapping to map variables in the 
+                                          # formula of the fitted object to those in data.
+                                          # Here weather2 (formula) is mapped to weather (data).
   )
 )
 
 modules <- list("fireSense_SpreadPredict")
-objects <- c("dataObject", "fireSense_SpreadFitted") # Pass objects found in the global environment to the simList environment
+objects <- c("weather", "fireSense_SpreadFitted") # Pass objects found in the global environment to the simList environment
 paths <- list(
   # cachePath = file.path(outputDir, "cache"),
   modulePath = file.path("~/Documents/GitHub/McIntire-lab/modulesPrivate/") ## TODO: change this to tempdir()
   # inputPath = inputDir,
   # outputPath = outputDir
 )
- 
-## TODO: stacks
 
 mySim <- simInit(times = times, params = parameters, modules = modules, objects = objects, paths = paths)
 
