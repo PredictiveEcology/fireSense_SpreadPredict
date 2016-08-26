@@ -43,7 +43,7 @@ set.seed(1)
 
 # Create a random map of weather
 nx <- ny <- 100L
-weather2 <- raster(nrows = ny, ncols = nx, xmn = -nx/2, xmx = nx/2, ymn = -ny/2, ymx = ny/2) %>%
+weather <- raster(nrows = ny, ncols = nx, xmn = -nx/2, xmx = nx/2, ymn = -ny/2, ymx = ny/2) %>%
   gaussMap(scale = 300, var = 0.03, speedup = nx/5e2, inMemory = TRUE)
 
 # Create a typical output of fireSense_SpreadFit
@@ -58,9 +58,9 @@ class(fireSense_SpreadFitted) <- "fireSense_SpreadFit"
 times <- list(start = 1, end = 1, timeunit = "year")
 parameters <- list(
   fireSense_SpreadPredict = list(
-    mapping = list(weather2 = "weather"), # One can use mapping to map variables in the 
-                                          # formula of the fitted object to those in data.
-                                          # Here weather2 (formula) is mapped to weather (data).
+    mapping = list(weather2 = "weather") # One can use mapping to map variables in the 
+                                         # formula of the fitted object to those in data.
+                                         # Here weather2 (formula) is mapped to weather (data).
   )
 )
 
