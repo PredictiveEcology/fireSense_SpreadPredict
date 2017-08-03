@@ -15,19 +15,18 @@ defineModule(sim, list(
   reqdPkgs = list("magrittr", "raster"),
   parameters = rbind(
     #defineParameter("paramName", "paramClass", default, min, max, "parameter description")),
-    defineParameter(name = "model", class = "character", default = "fireSense_SpreadFitted",
+    defineParameter(name = "model", class = "character",
+                    default = "fireSense_SpreadFitted",
                     desc = "a character vector indicating the name of a model
                             object created with the fireSense_SpreadFit module."),
-    defineParameter(name = "data", class = "character", default = "dataFireSense_SpreadPredict",
+    defineParameter(name = "data", class = "character",
+                    default = "dataFireSense_SpreadPredict",
                     desc = "a character vector indicating the names of objects
                             in the `simList` environment in which to look for
-                            variables in the model. `data` objects can be
-                            RasterLayers or RasterStacks (for time series), or
-                            named list of either several RasterLayers or several
-                            RasterStacks, but RasterLayers and RasterStack can not
-                            be mixed together. If omitted, or if variables are
-                            not found in `data` objects, variables are searched
-                            in the `simList` environment."),
+                            variables present in the model formula. `data`
+                            objects can be RasterLayers or RasterStacks. If
+                            variables are not found in `data` objects, they are
+                            searched in the `simList` environment."),
     defineParameter(name = "mapping", class = "character, list", default = NULL,
                     desc = "optional named vector or list of character strings
                             mapping one or more variables in the model formula
@@ -44,18 +43,18 @@ defineModule(sim, list(
       objectName = "fireSense_SpreadFitted",
       objectClass = "fireSense_SpreadFit",
       sourceURL = NA_character_,
-      desc = "An object of class fireSense_SpreadFitted created by the fireSense_SpreadFit module."
+      desc = "An object of class 'fireSense_SpreadFit' created by the fireSense_SpreadFit module."
     ),
     expectsInput(
       objectName = "dataFireSense_SpreadPredict",
-      objectClass = "RasterLayer, RasterStack, list",
+      objectClass = "RasterLayer, RasterStack",
       sourceURL = NA_character_,
-      desc = "One or more RasterLayers or RasterStacks, or named lists of RasterLayers or RasterStacks in which to look for variables with which to predict."
+      desc = "One or more RasterLayers or RasterStacks in which to look for variables present in the model formula."
     )
   ),
   outputObjects = createsOutput(
     objectName = "fireSense_SpreadPredicted",
-    objectClass = "raster",
+    objectClass = "RasterLayer, RasterStack",
     desc = "An object whose class depends on that of the inputs, could be a RasterLayer or a RasterStack."
   )
 ))
@@ -119,30 +118,35 @@ fireSense_SpreadPredictRun <- function(sim) {
       
     }
     
-  # Check if the model object exists in the simList environment
-  if (is.null(sim[[P(sim)$model]])) stop(paste0(moduleName, "> Model object '", P(sim)$model,"' does not exists in the simList environment."))
-  
   # Create a container to hold the data
   envData <- new.env(parent = envir(sim))
   on.exit(rm(envData))
-  
-  # Load data in the container
+
+  # Load inputs in the data container
   list2env(as.list(envir(sim)), envir = envData)
   
-  lapply(P(sim)$data, function(x, envData) {
+  # Check if the model object exists in the simList environment
+  if (!exists(P(sim)$model, envir(sim), inherits = FALSE)) 
+    stop(paste0(moduleName, "> Model object '", P(sim)$model, "' not found in the simList environment."))
+    
+  for(x in P(sim)$data) {
     
     if (!is.null(sim[[x]])) {
       
-      if (is.list(sim[[x]]) && !is.null(names(sim[[x]]))) {
+      if (is(sim[[x]], "RasterStack")) {
         
-        list2env(sim[[x]], envir = envData)  
-          
-      } else stop(paste0(moduleName, "> '", x, "' is not a named list."))
+        list2env(setNames(unstack(sim[[x]]), names(sim[[x]])), envir = envData)
+        
+      } else if (is(sim[[x]], "RasterLayer")) {
+        
+        envData[[x]] <- sim[[x]]
+        
+      } else stop(paste0(moduleName, "> '", x, "' is not a RasterLayer or a RasterStack."))
       
     }
     
-  }, envData = envData)
-
+  }
+  
   ## In case there is a response in the formula remove it
   terms <- sim[[P(sim)$model]]$formula %>% terms.formula %>% delete.response
   
@@ -164,26 +168,17 @@ fireSense_SpreadPredictRun <- function(sim) {
   formula <- reformulate(attr(terms, "term.labels"), intercept = attr(terms, "intercept"))
   allxy <- all.vars(formula)
   
-  if (all(unlist(lapply(allxy, function(x) is(envData[[x]], "RasterLayer"))))) {
-
-    sim$fireSense_SpreadPredicted <- mget(allxy, envir = envData, inherits = FALSE) %>%
-      stack %>%
-      predict(model = formula, fun = fireSense_SpreadPredictRaster, na.rm = TRUE, par = sim[[P(sim)$model]]$coef)
-    
-  } else {
+  missing <- !allxy %in% ls(envData, all.names = TRUE)
   
-    exist <- allxy %in% ls(envData)
-    class <- unlist(lapply(allxy, function(x) is(envData[[x]], "RasterLayer")))
-    
-    if (any(!exist)) {
-      stop(paste0(moduleName, "> Variable '", allxy[which(!exist)[1L]], "' not found."))
-    } else if (any(class)) {
-      stop(paste0(moduleName, "> At least one of the data objects is not a RasterLayer."))
-    } else {
-      stop(paste0(moduleName, "> Variable '", allxy[which(!class)[1L]], "' does not match a RasterLayer."))
-    }
-  }
+  if (s <- sum(missing))
+    stop(paste0(moduleName, "> '", allxy[missing][1L], "'", if (s > 1) paste0(" (and ", s-1L, " other", if (s>2) "s", ")"),
+                " not found in data objects nor in the simList environment."))
+  
+  sim$fireSense_SpreadPredicted <- mget(allxy, envir = envData, inherits = FALSE) %>%
+    stack %>%
+    predict(model = formula, fun = fireSense_SpreadPredictRaster, na.rm = TRUE, par = sim[[P(sim)$model]]$coef)
 
+  
   if (!is.na(P(sim)$intervalRunModule))
     sim <- scheduleEvent(sim, time(sim) + P(sim)$intervalRunModule, moduleName, "run")
   
