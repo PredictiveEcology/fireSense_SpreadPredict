@@ -2,7 +2,7 @@
 # are put into the simList. To use objects and functions, use sim$xxx.
 defineModule(sim, list(
   name = "fireSense_SpreadPredict",
-  description = "Predict a probability surface of fire spread probilities from a model fitted using fireSense_SpreadFit.",
+  description = "Predicts a surface of fire spread probilities using a model fitted with fireSense_SpreadFit.",
   keywords = c("fire spread", "fireSense", "predict"),
   authors = c(person("Jean", "Marchal", email = "jean.d.marchal@gmail.com", role = c("aut", "cre"))),
   childModules = character(),
@@ -63,30 +63,29 @@ defineModule(sim, list(
 #   - type `init` is required for initialiazation
 
 doEvent.fireSense_SpreadPredict = function(sim, eventTime, eventType, debug = FALSE) {
-  if (eventType == "init") {
-    sim <- sim$fireSense_SpreadPredictInit(sim)
 
-  } else if (eventType == "run") {
-    sim <- sim$fireSense_SpreadPredictRun(sim)
-
-  } else if (eventType == "save") {
-    # ! ----- EDIT BELOW ----- ! #
-    # do stuff for this event
-    
-    # e.g., call your custom functions/methods here
-    # you can define your own methods below this `doEvent` function
-    
-    # schedule future event(s)
-    
-    # e.g.,
-    # sim <- scheduleEvent(sim, time(sim) + increment, "fireSense_SpreadPredict", "save")
-    
-    # ! ----- STOP EDITING ----- ! #
-    
-  } else {
+  switch(
+    eventType,
+    init = { sim <- sim$fireSense_SpreadPredictInit(sim) }, 
+    run = { sim <- sim$fireSense_SpreadPredictRun(sim) },
+    save = {
+      # ! ----- EDIT BELOW ----- ! #
+      # do stuff for this event
+      
+      # e.g., call your custom functions/methods here
+      # you can define your own methods below this `doEvent` function
+      
+      # schedule future event(s)
+      
+      # e.g.,
+      # sim <- scheduleEvent(sim, time(sim) + increment, "fireSense_SpreadPredict", "save")
+      
+      # ! ----- STOP EDITING ----- ! #
+    },
     warning(paste("Undefined event type: '", current(sim)[1, "eventType", with = FALSE],
                   "' in module '", current(sim)[1, "moduleName", with = FALSE], "'", sep = ""))
-  }
+  )
+  
   invisible(sim)
 }
 
@@ -98,8 +97,10 @@ doEvent.fireSense_SpreadPredict = function(sim, eventTime, eventType, debug = FA
 ### template initialization
 fireSense_SpreadPredictInit <- function(sim) {
 
+  stopifnot(is(sim[[P(sim)$modelName]], "fireSense_PredictFit"))
+
   sim <- scheduleEvent(sim, eventTime = P(sim)$initialRunTime, current(sim)$moduleName, "run")
-  sim
+  invisible(sim)
 
 }
 
@@ -182,7 +183,7 @@ fireSense_SpreadPredictRun <- function(sim) {
   if (!is.na(P(sim)$intervalRunModule))
     sim <- scheduleEvent(sim, time(sim) + P(sim)$intervalRunModule, moduleName, "run")
   
-  sim
+  invisible(sim)
 
 }
 

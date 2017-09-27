@@ -1,6 +1,6 @@
 ---
 title: "fireSense_SpreadPredict"
-author: "Jean Marchal"
+author: "Jean Marchal (jean.d.marchal@gmail.com)"
 date: "August 2017"
 output:
   html_document: default
@@ -8,7 +8,7 @@ output:
 ---
 
 # Overview
-Predict a probability surface of fire spread probilities from a model fitted using fireSense_SpreadFit.
+Predicts a surface of fire spread probilities using a model fitted with fireSense_SpreadFit.
 
 # Download the module
 ```{r download module, eval = FALSE, echo = TRUE}
