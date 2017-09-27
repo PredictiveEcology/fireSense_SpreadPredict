@@ -5,10 +5,10 @@ library(SpaDES)
 set.seed(123)
 
 # Define simulation parameters
-times <- list(start = 1, end = 1, timeunit = "year")
+times <- list(start = 1, end = 2, timeunit = "year")
 modules <- list("fireSense_SpreadPredict")
 paths <- list(
-  modulePath = file.path("~/Documents/GitHub/McIntire-lab/modulesPrivate/")
+  modulePath = "~/Documents/GitHub/McIntire-lab/modulesPrivate/"
 )
 
 # Create a random map of weather
@@ -26,6 +26,7 @@ class(fireSense_SpreadFitted) <- "fireSense_SpreadFit"
 
 parameters <- list(
   fireSense_SpreadPredict = list(
+    intervalRunModule = 1,
     mapping = list(weather2 = "weather") # One can use mapping to map variables
                                          # in the formula of the fitted object
                                          # to those in data. Here weather2
@@ -47,4 +48,5 @@ sim <- simInit(
 
 sim <- spades(sim)
 
-x11(); Plot(weather, sim$fireSense_SpreadPredicted)
+spreadProb <- sim$fireSense_SpreadPredicted[[1]]
+x11(); Plot(weather, spreadProb)

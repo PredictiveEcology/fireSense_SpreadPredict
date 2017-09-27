@@ -6,7 +6,7 @@ defineModule(sim, list(
   keywords = c("fire spread", "fireSense", "predict"),
   authors = c(person("Jean", "Marchal", email = "jean.d.marchal@gmail.com", role = c("aut", "cre"))),
   childModules = character(),
-  version = numeric_version("0.1.0"),
+  version = list(SpaDES.core = "0.1.0", fireSense_SpreadPredict = "0.0.1"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = NA_character_, # e.g., "year",
@@ -15,7 +15,7 @@ defineModule(sim, list(
   reqdPkgs = list("magrittr", "raster"),
   parameters = rbind(
     #defineParameter("paramName", "paramClass", default, min, max, "parameter description")),
-    defineParameter(name = "model", class = "character",
+    defineParameter(name = "modelName", class = "character",
                     default = "fireSense_SpreadFitted",
                     desc = "a character vector indicating the name of a model
                             object created with the fireSense_SpreadFit module."),
@@ -36,7 +36,8 @@ defineModule(sim, list(
                             time of the simulation."),
     defineParameter(name = "intervalRunModule", class = "numeric", default = NA,
                     desc = "optional. Interval between two runs of this module,
-                            expressed in units of simulation time.")
+                            expressed in units of simulation time."),
+    defineParameter(".useCache", "numeric", FALSE, NA, NA, "Should this entire module be run with caching activated? This is generally intended for data-type modules, where stochasticity and time are not relevant")
   ),
   inputObjects = rbind(
     expectsInput(
@@ -97,7 +98,7 @@ doEvent.fireSense_SpreadPredict = function(sim, eventTime, eventType, debug = FA
 ### template initialization
 fireSense_SpreadPredictInit <- function(sim) {
 
-  stopifnot(is(sim[[P(sim)$modelName]], "fireSense_PredictFit"))
+  stopifnot(is(sim[[P(sim)$modelName]], "fireSense_SpreadFit"))
 
   sim <- scheduleEvent(sim, eventTime = P(sim)$initialRunTime, current(sim)$moduleName, "run")
   invisible(sim)
@@ -107,6 +108,8 @@ fireSense_SpreadPredictInit <- function(sim) {
 fireSense_SpreadPredictRun <- function(sim) {
 
   moduleName <- current(sim)$moduleName
+  currentTime <- time(sim, timeunit(sim))
+  endTime <- end(sim, timeunit(sim))
   
   ## Toolbox: set of functions used internally by fireSense_SpreadPredictRun
     ## Raster predict function
@@ -149,17 +152,17 @@ fireSense_SpreadPredictRun <- function(sim) {
   }
   
   ## In case there is a response in the formula remove it
-  terms <- sim[[P(sim)$model]]$formula %>% terms.formula %>% delete.response
+  terms <- sim[[P(sim)$modelName]]$formula %>% terms.formula %>% delete.response
   
   ## Mapping variables names to data
   if (!is.null(P(sim)$mapping)) {
     
     for (i in 1:length(P(sim)$mapping)) {
       
-      attr(terms, "term.labels") <- gsub(
+      attr(terms, "term.labels") %<>% gsub(
         pattern = names(P(sim)$mapping[i]),
         replacement = P(sim)$mapping[[i]],
-        x = attr(terms, "term.labels")
+        x = .
       )
       
     }
@@ -175,13 +178,14 @@ fireSense_SpreadPredictRun <- function(sim) {
     stop(paste0(moduleName, "> '", allxy[missing][1L], "'", if (s > 1) paste0(" (and ", s-1L, " other", if (s>2) "s", ")"),
                 " not found in data objects nor in the simList environment."))
   
-  sim$fireSense_SpreadPredicted <- mget(allxy, envir = envData, inherits = FALSE) %>%
-    stack %>%
-    predict(model = formula, fun = fireSense_SpreadPredictRaster, na.rm = TRUE, par = sim[[P(sim)$model]]$coef)
-
+  sim$fireSense_SpreadPredicted[as.character(currentTime)] <- list(
+    mget(allxy, envir = envData, inherits = FALSE) %>%
+      stack %>%
+      predict(model = formula, fun = fireSense_SpreadPredictRaster, na.rm = TRUE, par = sim[[P(sim)$model]]$coef)
+  )    
   
-  if (!is.na(P(sim)$intervalRunModule))
-    sim <- scheduleEvent(sim, time(sim) + P(sim)$intervalRunModule, moduleName, "run")
+  if (!is.na(P(sim)$intervalRunModule) && (currentTime + P(sim)$intervalRunModule) <= endTime) # Assumes time only moves forward
+    sim <- scheduleEvent(sim, currentTime + P(sim)$intervalRunModule, moduleName, "run")
   
   invisible(sim)
 
