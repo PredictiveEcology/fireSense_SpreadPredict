@@ -98,14 +98,14 @@ doEvent.fireSense_SpreadPredict = function(sim, eventTime, eventType, debug = FA
 ### template initialization
 fireSense_SpreadPredictInit <- function(sim)
 {
-  stopifnot(is(sim[[P(sim)$modelName]], "fireSense_SpreadFit"))
-
   sim <- scheduleEvent(sim, eventTime = P(sim)$initialRunTime, current(sim)$moduleName, "run")
   invisible(sim)
 }
 
 fireSense_SpreadPredictRun <- function(sim) 
 {
+  stopifnot(is(sim[[P(sim)$modelName]], "fireSense_SpreadFit"))
+  
   moduleName <- current(sim)$moduleName
   currentTime <- time(sim, timeunit(sim))
   endTime <- end(sim, timeunit(sim))
