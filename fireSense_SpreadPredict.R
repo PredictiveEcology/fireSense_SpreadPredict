@@ -63,8 +63,8 @@ defineModule(sim, list(
 ## event types
 #   - type `init` is required for initialiazation
 
-doEvent.fireSense_SpreadPredict = function(sim, eventTime, eventType, debug = FALSE) {
-
+doEvent.fireSense_SpreadPredict = function(sim, eventTime, eventType, debug = FALSE) 
+{
   switch(
     eventType,
     init = { sim <- sim$fireSense_SpreadPredictInit(sim) }, 
@@ -96,30 +96,28 @@ doEvent.fireSense_SpreadPredict = function(sim, eventTime, eventType, debug = FA
 #   - keep event functions short and clean, modularize by calling subroutines from section below.
 
 ### template initialization
-fireSense_SpreadPredictInit <- function(sim) {
-
+fireSense_SpreadPredictInit <- function(sim)
+{
   stopifnot(is(sim[[P(sim)$modelName]], "fireSense_SpreadFit"))
 
   sim <- scheduleEvent(sim, eventTime = P(sim)$initialRunTime, current(sim)$moduleName, "run")
   invisible(sim)
-
 }
 
-fireSense_SpreadPredictRun <- function(sim) {
-
+fireSense_SpreadPredictRun <- function(sim) 
+{
   moduleName <- current(sim)$moduleName
   currentTime <- time(sim, timeunit(sim))
   endTime <- end(sim, timeunit(sim))
   
   ## Toolbox: set of functions used internally by fireSense_SpreadPredictRun
     ## Raster predict function
-    fireSense_SpreadPredictRaster <- function(model, data, par) {
-      
+    fireSense_SpreadPredictRaster <- function(model, data, par) 
+    {
       par[3L] + par[1L] / (1 + (model %>%
         model.matrix(data) %>%
         `%*%` (par[5:length(par)]) %>%
         drop) ^ (-par[2L])) ^ par[4L]
-      
     }
     
   # Create a container to hold the data
@@ -133,40 +131,36 @@ fireSense_SpreadPredictRun <- function(sim) {
   if (!exists(P(sim)$model, envir(sim), inherits = FALSE)) 
     stop(paste0(moduleName, "> Model object '", P(sim)$model, "' not found in the simList environment."))
     
-  for(x in P(sim)$data) {
-    
-    if (!is.null(sim[[x]])) {
-      
-      if (is(sim[[x]], "RasterStack")) {
-        
+  for(x in P(sim)$data) 
+  {
+    if (!is.null(sim[[x]])) 
+    {
+      if (is(sim[[x]], "RasterStack")) 
+      {
         list2env(setNames(unstack(sim[[x]]), names(sim[[x]])), envir = envData)
-        
-      } else if (is(sim[[x]], "RasterLayer")) {
-        
+      } 
+      else if (is(sim[[x]], "RasterLayer")) 
+      {
         envData[[x]] <- sim[[x]]
-        
-      } else stop(paste0(moduleName, "> '", x, "' is not a RasterLayer or a RasterStack."))
-      
+      } 
+      else stop(paste0(moduleName, "> '", x, "' is not a RasterLayer or a RasterStack."))
     }
-    
   }
   
   ## In case there is a response in the formula remove it
   terms <- sim[[P(sim)$modelName]]$formula %>% terms.formula %>% delete.response
   
   ## Mapping variables names to data
-  if (!is.null(P(sim)$mapping)) {
-    
-    for (i in 1:length(P(sim)$mapping)) {
-      
+  if (!is.null(P(sim)$mapping))
+  {
+    for (i in 1:length(P(sim)$mapping)) 
+    {
       attr(terms, "term.labels") %<>% gsub(
         pattern = names(P(sim)$mapping[i]),
         replacement = P(sim)$mapping[[i]],
         x = .
       )
-      
     }
-    
   }
   
   formula <- reformulate(attr(terms, "term.labels"), intercept = attr(terms, "intercept"))
@@ -188,12 +182,12 @@ fireSense_SpreadPredictRun <- function(sim) {
     sim <- scheduleEvent(sim, currentTime + P(sim)$intervalRunModule, moduleName, "run")
   
   invisible(sim)
-
 }
 
 
 ### template for save events
-fireSense_SpreadPredictSave <- function(sim) {
+fireSense_SpreadPredictSave <- function(sim) 
+{
   # ! ----- EDIT BELOW ----- ! #
   # do stuff for this event
   sim <- saveFiles(sim)
