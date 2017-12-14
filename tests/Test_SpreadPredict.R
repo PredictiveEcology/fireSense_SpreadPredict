@@ -6,8 +6,10 @@ set.seed(123)
 
 modulePath <- "~/Documents/GitHub/McIntire-lab/modulesPrivate/"
 
+start <- end <- 1
+
 # Define simulation parameters
-times <- list(start = 1, end = 2, timeunit = "year")
+times <- list(start = start, end = end, timeunit = "year")
 modules <- list("fireSense_SpreadPredict")
 paths <- list(
   modulePath = modulePath
@@ -15,8 +17,13 @@ paths <- list(
 
 # Create a random map of weather
 nx <- ny <- 100L
-weather <- raster(nrows = ny, ncols = nx, xmn = -nx/2, xmx = nx/2, ymn = -ny/2, ymx = ny/2) %>%
-  gaussMap(scale = 300, var = 1, speedup = 1, inMemory = TRUE)
+weather <- setNames(
+  list(
+    raster(nrows = ny, ncols = nx, xmn = -nx/2, xmx = nx/2, ymn = -ny/2, ymx = ny/2) %>%
+      gaussMap(scale = 300, var = 1, speedup = 1, inMemory = TRUE)
+  ),
+  nm = start
+)
 
 # Create a typical output of fireSense_SpreadFit
 fireSense_SpreadFitted <- list(
@@ -29,6 +36,7 @@ class(fireSense_SpreadFitted) <- "fireSense_SpreadFit"
 parameters <- list(
   fireSense_SpreadPredict = list(
     intervalRunModule = 1,
+    data = "weather",
     mapping = list(weather2 = "weather") # One can use mapping to map variables
                                          # in the formula of the fitted object
                                          # to those in data. Here weather2
@@ -50,5 +58,6 @@ sim <- simInit(
 
 sim <- spades(sim)
 
-spreadProb <- sim$fireSense_SpreadPredicted[[1]]
+spreadProb <- sim$fireSense_SpreadPredicted[[as.character(start)]]
+weather <- weather[[as.character(start)]]
 x11(); Plot(weather, spreadProb)

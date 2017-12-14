@@ -26,7 +26,12 @@ defineModule(sim, list(
                             variables present in the model formula. `data`
                             objects can be RasterLayers or RasterStacks. If
                             variables are not found in `data` objects, they are
-                            searched in the `simList` environment."),
+                            searched in the `simList` environment. For time 
+                            series, `data` objects must be named lists of 
+                            RasterStacks or RasterLayers, named starting with 
+                            `start(simList)` and ending with `end(simList)` such
+                            that variables can be matched for every 
+                            `timeunit(simList)` of the simulation."),
     defineParameter(name = "mapping", class = "character, list", default = NULL,
                     desc = "optional named vector or list of character strings
                             mapping one or more variables in the model formula
@@ -123,25 +128,18 @@ fireSense_SpreadPredictRun <- function(sim)
   # Create a container to hold the data
   envData <- new.env(parent = envir(sim))
   on.exit(rm(envData))
-
-  # Load inputs in the data container
-  list2env(as.list(envir(sim)), envir = envData)
   
-  # Check if the model object exists in the simList environment
-  if (!exists(P(sim)$model, envir(sim), inherits = FALSE)) 
-    stop(paste0(moduleName, "> Model object '", P(sim)$model, "' not found in the simList environment."))
-    
   for(x in P(sim)$data) 
   {
-    if (!is.null(sim[[x]])) 
+    if (!is.null(sim[[x]][[currentTime]])) 
     {
-      if (is(sim[[x]], "RasterStack")) 
+      if (is(sim[[x]][[currentTime]], "RasterStack")) 
       {
-        list2env(setNames(unstack(sim[[x]]), names(sim[[x]])), envir = envData)
+        list2env(setNames(unstack(sim[[x]][[currentTime]]), names(sim[[x]][[currentTime]])), envir = envData)
       } 
-      else if (is(sim[[x]], "RasterLayer")) 
+      else if (is(sim[[x]][[currentTime]], "RasterLayer")) 
       {
-        envData[[x]] <- sim[[x]]
+        envData[[x]] <- sim[[x]][[currentTime]]
       } 
       else stop(paste0(moduleName, "> '", x, "' is not a RasterLayer or a RasterStack."))
     }
@@ -162,7 +160,7 @@ fireSense_SpreadPredictRun <- function(sim)
       )
     }
   }
-  
+
   formula <- reformulate(attr(terms, "term.labels"), intercept = attr(terms, "intercept"))
   allxy <- all.vars(formula)
   
@@ -171,7 +169,7 @@ fireSense_SpreadPredictRun <- function(sim)
   if (s <- sum(missing))
     stop(paste0(moduleName, "> '", allxy[missing][1L], "'", if (s > 1) paste0(" (and ", s-1L, " other", if (s>2) "s", ")"),
                 " not found in data objects nor in the simList environment."))
-  
+
   sim$fireSense_SpreadPredicted[as.character(currentTime)] <- list(
     mget(allxy, envir = envData, inherits = FALSE) %>%
       stack %>%
