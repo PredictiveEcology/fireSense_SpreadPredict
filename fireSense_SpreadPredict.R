@@ -128,18 +128,18 @@ fireSense_SpreadPredictRun <- function(sim)
   # Create a container to hold the data
   envData <- new.env(parent = envir(sim))
   on.exit(rm(envData))
-  
+
   for(x in P(sim)$data) 
   {
-    if (!is.null(sim[[x]][[currentTime]])) 
+    if (!is.null(sim[[x]][[as.character(currentTime)]])) 
     {
-      if (is(sim[[x]][[currentTime]], "RasterStack")) 
+      if (is(sim[[x]][[as.character(currentTime)]], "RasterStack")) 
       {
-        list2env(setNames(unstack(sim[[x]][[currentTime]]), names(sim[[x]][[currentTime]])), envir = envData)
+        list2env(setNames(unstack(sim[[x]][[as.character(currentTime)]]), names(sim[[x]][[as.character(currentTime)]])), envir = envData)
       } 
-      else if (is(sim[[x]][[currentTime]], "RasterLayer")) 
+      else if (is(sim[[x]][[as.character(currentTime)]], "RasterLayer")) 
       {
-        envData[[x]] <- sim[[x]][[currentTime]]
+        envData[[x]] <- sim[[x]][[as.character(currentTime)]]
       } 
       else stop(paste0(moduleName, "> '", x, "' is not a RasterLayer or a RasterStack."))
     }
