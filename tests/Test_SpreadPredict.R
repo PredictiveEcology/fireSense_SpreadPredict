@@ -4,7 +4,7 @@ library(SpaDES)
 
 set.seed(123)
 
-modulePath <- "~/Documents/GitHub/McIntire-lab/modulesPrivate/"
+modulePath <- normalizePath("..")
 
 start <- end <- 1
 
