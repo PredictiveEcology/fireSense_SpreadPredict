@@ -131,15 +131,15 @@ fireSense_SpreadPredictRun <- function(sim)
 
   for(x in P(sim)$data) 
   {
-    if (!is.null(sim[[x]][[as.character(currentTime)]])) 
+    if (!is.null(sim[[x]])) 
     {
-      if (is(sim[[x]][[as.character(currentTime)]], "RasterStack")) 
+      if (is(sim[[x]], "RasterStack")) 
       {
-        list2env(setNames(unstack(sim[[x]][[as.character(currentTime)]]), names(sim[[x]][[as.character(currentTime)]])), envir = envData)
+        list2env(setNames(unstack(sim[[x]]), names(sim[[x]])), envir = envData)
       } 
-      else if (is(sim[[x]][[as.character(currentTime)]], "RasterLayer")) 
+      else if (is(sim[[x]], "RasterLayer")) 
       {
-        envData[[x]] <- sim[[x]][[as.character(currentTime)]]
+        envData[[x]] <- sim[[x]]
       } 
       else stop(paste0(moduleName, "> '", x, "' is not a RasterLayer or a RasterStack."))
     }
@@ -170,11 +170,9 @@ fireSense_SpreadPredictRun <- function(sim)
     stop(paste0(moduleName, "> '", allxy[missing][1L], "'", if (s > 1) paste0(" (and ", s-1L, " other", if (s>2) "s", ")"),
                 " not found in data objects."))
 
-  sim$fireSense_SpreadPredicted[as.character(currentTime)] <- list(
-    mget(allxy, envir = envData, inherits = FALSE) %>%
-      stack %>%
-      predict(model = formula, fun = fireSense_SpreadPredictRaster, na.rm = TRUE, par = sim[[P(sim)$model]]$coef)
-  )    
+  sim$fireSense_SpreadPredicted <- mget(allxy, envir = envData, inherits = FALSE) %>%
+    stack %>%
+    predict(model = formula, fun = fireSense_SpreadPredictRaster, na.rm = TRUE, par = sim[[P(sim)$model]]$coef)
   
   if (!is.na(P(sim)$.runInterval))
     sim <- scheduleEvent(sim, currentTime + P(sim)$.runInterval, moduleName, "run")
