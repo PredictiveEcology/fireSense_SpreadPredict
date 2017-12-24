@@ -26,12 +26,9 @@ defineModule(sim, list(
                             variables present in the model formula. `data`
                             objects can be RasterLayers or RasterStacks. If
                             variables are not found in `data` objects, they are
-                            searched in the `simList` environment. For time 
-                            series, `data` objects must be named lists of 
-                            RasterStacks or RasterLayers, named starting with 
-                            `start(simList)` and ending with `end(simList)` such
-                            that variables can be matched for every 
-                            `timeunit(simList)` of the simulation."),
+                            searched in the `simList` environment. If variables 
+                            are not found in `data` objects, they are searched 
+                            in the `simList` environment."),
     defineParameter(name = "mapping", class = "character, list", default = NULL,
                     desc = "optional named vector or list of character strings
                             mapping one or more variables in the model formula
@@ -128,6 +125,9 @@ fireSense_SpreadPredictRun <- function(sim)
   # Create a container to hold the data
   envData <- new.env(parent = envir(sim))
   on.exit(rm(envData))
+  
+  # Load inputs in the data container
+  list2env(as.list(envir(sim)), envir = envData)
 
   for(x in P(sim)$data) 
   {
