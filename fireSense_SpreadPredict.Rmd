@@ -28,8 +28,8 @@ Name|Default|Description
 `model`|`"fireSense_SpreadFitted"`|a character vector indicating the name of a model object created with the fireSense_SpreadFit module.
 `data`|`"dataFireSense_SpreadPredict"`|a character vector indicating the names of objects in the `simList` environment in which to look for variables present in the model formula. `data` objects can be RasterLayers or RasterStacks. If variables are not found in `data` objects, they are searched in the `simList` environment.
 `mapping`|`NULL`|optional named vector or list of character strings mapping one or more variables in the model formula to those in data objects.
-`initialRunTime`|`start(simList)`|when to start this module? By default, the start time of the simulation.
-`intervalRunModule`|`NA`|optional. Interval between two runs of this module, expressed in units of simulation time.
+`.runInitialTime`|`start(simList)`|when to start this module? By default, the start time of the simulation.
+`.runInterval`|`NA`|optional. Interval between two runs of this module, expressed in units of simulation time.
 |||
 
 ## Usage example
