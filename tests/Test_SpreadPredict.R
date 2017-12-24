@@ -35,7 +35,7 @@ class(fireSense_SpreadFitted) <- "fireSense_SpreadFit"
 
 parameters <- list(
   fireSense_SpreadPredict = list(
-    intervalRunModule = 1,
+    .runInterval = 1,
     data = "weather",
     mapping = list(weather2 = "weather") # One can use mapping to map variables
                                          # in the formula of the fitted object
