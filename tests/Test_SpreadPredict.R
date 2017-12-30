@@ -17,13 +17,8 @@ paths <- list(
 
 # Create a random map of weather
 nx <- ny <- 100L
-weather <- setNames(
-  list(
-    raster(nrows = ny, ncols = nx, xmn = -nx/2, xmx = nx/2, ymn = -ny/2, ymx = ny/2) %>%
+weather <- raster(nrows = ny, ncols = nx, xmn = -nx/2, xmx = nx/2, ymn = -ny/2, ymx = ny/2) %>%
       gaussMap(scale = 300, var = 1, speedup = 1, inMemory = TRUE)
-  ),
-  nm = start
-)
 
 # Create a typical output of fireSense_SpreadFit
 fireSense_SpreadFitted <- list(
@@ -58,6 +53,6 @@ sim <- simInit(
 
 sim <- spades(sim)
 
-spreadProb <- sim$fireSense_SpreadPredicted[[as.character(start)]]
-weather <- weather[[as.character(start)]]
+spreadProb <- sim$fireSense_SpreadPredicted
+weather <- weather
 x11(); Plot(weather, spreadProb)
