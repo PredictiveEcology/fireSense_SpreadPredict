@@ -138,7 +138,7 @@ fireSense_SpreadPredictRun <- function(sim)
       {
         envData[[x]] <- sim[[x]]
       } 
-      else stop(paste0(moduleName, "> '", x, "' is not a RasterLayer or a RasterStack."))
+      else stop(moduleName, "> '", x, "' is not a RasterLayer or a RasterStack.")
     }
   }
   
@@ -164,8 +164,9 @@ fireSense_SpreadPredictRun <- function(sim)
   missing <- !allxy %in% ls(envData, all.names = TRUE)
   
   if (s <- sum(missing))
-    stop(paste0(moduleName, "> '", allxy[missing][1L], "'", if (s > 1) paste0(" (and ", s-1L, " other", if (s>2) "s", ")"),
-                " not found in data objects."))
+    stop(moduleName, "> '", allxy[missing][1L], "'",
+         if (s > 1) paste0(" (and ", s-1L, " other", if (s>2) "s", ")"),
+         " not found in data objects.")
 
   sim$fireSense_SpreadPredicted <- mget(allxy, envir = envData, inherits = FALSE) %>%
     stack %>%
