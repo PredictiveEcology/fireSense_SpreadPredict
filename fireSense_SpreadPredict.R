@@ -113,10 +113,10 @@ fireSense_SpreadPredictRun <- function(sim)
     ## Raster predict function
     fireSense_SpreadPredictRaster <- function(model, data, par) 
     {
-      par[3L] + par[1L] / (1 + (model %>%
+      par[1L] + (par[2L] - par[1L]) / (1 + (model %>%
         model.matrix(data) %>%
         `%*%` (par[5:length(par)]) %>%
-        drop) ^ (-par[2L])) ^ par[4L]
+        drop) ^ (-par[3L])) ^ par[4L]
     }
     
   # Create a container to hold the data

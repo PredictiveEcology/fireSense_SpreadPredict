@@ -23,8 +23,8 @@ weather <- raster(nrows = ny, ncols = nx, xmn = -nx/2, xmx = nx/2, ymn = -ny/2, 
 # Create a typical output of fireSense_SpreadFit
 fireSense_SpreadFitted <- list(
   formula = ~ weather2 -1,
-  coef = setNames(c(0.3, 3, 0.1, 1.5, 3),
-                  c("A", "B", "D", "G", "weather")) # A, B, D, G are parameters of the 5-parameters logistic function
+  coef = setNames(c(0.1, .3, 3, 1.5, 3),
+                  c("d", "a", "b", "g", "weather")) # d, a, b, g are parameters of the 5-parameters logistic function
 )
 class(fireSense_SpreadFitted) <- "fireSense_SpreadFit"
 
