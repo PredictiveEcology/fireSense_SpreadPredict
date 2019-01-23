@@ -111,7 +111,7 @@ spreadPredictRun <- function(sim)
   
   ## Toolbox: set of functions used internally by spreadPredictRun
     ## Raster predict function
-    fireSense_SpreadPredictRaster <- function(model, data, par) 
+    spreadPredictRaster <- function(model, data, par) 
     {
       par[1L] + (par[2L] - par[1L]) / (1 + (model %>%
         model.matrix(data) %>%
@@ -166,7 +166,7 @@ spreadPredictRun <- function(sim)
 
   sim$fireSense_SpreadPredicted <- mget(allxy, envir = mod, inherits = FALSE) %>%
     stack %>%
-    predict(model = formula, fun = fireSense_SpreadPredictRaster, na.rm = TRUE, par = sim[[P(sim)$model]]$coef)
+    predict(model = formula, fun = spreadPredictRaster, na.rm = TRUE, par = sim[[P(sim)$model]]$coef)
   
   if (!is.na(P(sim)$.runInterval))
     sim <- scheduleEvent(sim, currentTime + P(sim)$.runInterval, moduleName, "run")
