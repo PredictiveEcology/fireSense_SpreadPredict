@@ -60,7 +60,7 @@ defineModule(sim, list(
     )
   ),
   outputObjects = createsOutput(
-    objectName = "spreadPredicted",
+    objectName = "fireSense_SpreadPredicted",
     objectClass = "RasterLayer, RasterStack",
     desc = "An object whose class depends on that of the inputs, could be a RasterLayer or a RasterStack."
   )
@@ -164,7 +164,7 @@ spreadPredictRun <- function(sim)
          if (s > 1) paste0(" (and ", s-1L, " other", if (s>2) "s", ")"),
          " not found in data objects.")
 
-  sim$spreadPredicted <- mget(allxy, envir = mod, inherits = FALSE) %>%
+  sim$fireSense_SpreadPredicted <- mget(allxy, envir = mod, inherits = FALSE) %>%
     stack %>%
     predict(model = formula, fun = fireSense_SpreadPredictRaster, na.rm = TRUE, par = sim[[P(sim)$model]]$coef)
   
@@ -183,7 +183,7 @@ spreadPredictSave <- function(sim)
   currentTime <- time(sim, timeUnit)
   
   saveRDS(
-    sim$spreadPredicted, 
+    sim$fireSense_SpreadPredicted, 
     file = file.path(paths(sim)$out, paste0("fireSense_SpreadPredicted_", timeUnit, currentTime, ".rds"))
   )
   
