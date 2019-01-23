@@ -110,7 +110,6 @@ spreadPredictRun <- function(sim)
   endTime <- end(sim, timeunit(sim))
   
   ## Toolbox: set of functions used internally by spreadPredictRun
-    ## Raster predict function
     spreadPredictRaster <- function(model, data, par) 
     {
       par[1L] + (par[2L] - par[1L]) / (1 + (model %>%
