@@ -118,13 +118,9 @@ spreadPredictRun <- function(sim)
         `%*%` (par[5:length(par)]) %>%
         drop) ^ (-par[3L])) ^ par[4L]
     }
-    
-  # Create a container to hold the data
-  envData <- new.env(parent = envir(sim))
-  on.exit(rm(envData))
   
   # Load inputs in the data container
-  list2env(as.list(envir(sim)), envir = envData)
+  list2env(as.list(envir(sim)), envir = mod)
 
   for(x in P(sim)$data) 
   {
@@ -132,11 +128,11 @@ spreadPredictRun <- function(sim)
     {
       if (is(sim[[x]], "RasterStack")) 
       {
-        list2env(setNames(unstack(sim[[x]]), names(sim[[x]])), envir = envData)
+        list2env(setNames(unstack(sim[[x]]), names(sim[[x]])), envir = mod)
       } 
       else if (is(sim[[x]], "RasterLayer")) 
       {
-        envData[[x]] <- sim[[x]]
+        mod[[x]] <- sim[[x]]
       } 
       else stop(moduleName, "> '", x, "' is not a RasterLayer or a RasterStack.")
     }
@@ -161,14 +157,14 @@ spreadPredictRun <- function(sim)
   formula <- reformulate(attr(terms, "term.labels"), intercept = attr(terms, "intercept"))
   allxy <- all.vars(formula)
   
-  missing <- !allxy %in% ls(envData, all.names = TRUE)
+  missing <- !allxy %in% ls(mod, all.names = TRUE)
   
   if (s <- sum(missing))
     stop(moduleName, "> '", allxy[missing][1L], "'",
          if (s > 1) paste0(" (and ", s-1L, " other", if (s>2) "s", ")"),
          " not found in data objects.")
 
-  sim$spreadPredicted <- mget(allxy, envir = envData, inherits = FALSE) %>%
+  sim$spreadPredicted <- mget(allxy, envir = mod, inherits = FALSE) %>%
     stack %>%
     predict(model = formula, fun = fireSense_SpreadPredictRaster, na.rm = TRUE, par = sim[[P(sim)$model]]$coef)
   
