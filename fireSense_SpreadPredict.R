@@ -73,9 +73,9 @@ doEvent.fireSense_SpreadPredict = function(sim, eventTime, eventType, debug = FA
 {
   switch(
     eventType,
-    init = { sim <- sim$fireSense_SpreadPredictInit(sim) }, 
-    run = { sim <- sim$fireSense_SpreadPredictRun(sim) },
-    save = { sim <- sim$fireSense_SpreadPredictSave(sim) },
+    init = { sim <- spreadPredictInit(sim) }, 
+    run = { sim <- spreadPredictRun(sim) },
+    save = { sim <- spreadPredictSave(sim) },
     warning(paste("Undefined event type: '", current(sim)[1, "eventType", with = FALSE],
                   "' in module '", current(sim)[1, "moduleName", with = FALSE], "'", sep = ""))
   )
@@ -89,7 +89,7 @@ doEvent.fireSense_SpreadPredict = function(sim, eventTime, eventType, debug = FA
 #   - keep event functions short and clean, modularize by calling subroutines from section below.
 
 ### template initialization
-fireSense_SpreadPredictInit <- function(sim)
+spreadPredictInit <- function(sim)
 {
   moduleName <- current(sim)$moduleName
   
@@ -101,7 +101,7 @@ fireSense_SpreadPredictInit <- function(sim)
   invisible(sim)
 }
 
-fireSense_SpreadPredictRun <- function(sim) 
+spreadPredictRun <- function(sim) 
 {
   stopifnot(is(sim[[P(sim)$modelName]], "fireSense_SpreadFit"))
   
@@ -109,7 +109,7 @@ fireSense_SpreadPredictRun <- function(sim)
   currentTime <- time(sim, timeunit(sim))
   endTime <- end(sim, timeunit(sim))
   
-  ## Toolbox: set of functions used internally by fireSense_SpreadPredictRun
+  ## Toolbox: set of functions used internally by spreadPredictRun
     ## Raster predict function
     fireSense_SpreadPredictRaster <- function(model, data, par) 
     {
@@ -180,7 +180,7 @@ fireSense_SpreadPredictRun <- function(sim)
 
 
 ### template for save events
-fireSense_SpreadPredictSave <- function(sim) 
+spreadPredictSave <- function(sim) 
 {
   moduleName <- current(sim)$moduleName
   timeUnit <- timeunit(sim)
