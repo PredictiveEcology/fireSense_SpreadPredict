@@ -125,7 +125,7 @@ spreadPredictRun <- function(sim)
   {
     if (!is.null(sim[[x]])) 
     {
-      if (is(sim[[x]], "RasterStack")) 
+      if (is(sim[[x]], "RasterStack") || is(sim[[x]], "RasterBrick")) 
       {
         list2env(setNames(unstack(sim[[x]]), names(sim[[x]])), envir = mod)
       } 
@@ -133,7 +133,7 @@ spreadPredictRun <- function(sim)
       {
         mod[[x]] <- sim[[x]]
       } 
-      else stop(moduleName, "> '", x, "' is not a RasterLayer or a RasterStack.")
+      else stop(moduleName, "> '", x, "' is not a RasterLayer, a RasterStack or a RasterBrick.")
     }
   }
   
