@@ -25,7 +25,7 @@ downloadModule(moduleName, path = spadesModulesDirectory)
 ## Module parameters
 Name|Default|Description
 ----|:-------|---------------------------------------------------------------------
-`model`|`"fireSense_SpreadFitted"`|a character vector indicating the name of a model object created with the fireSense_SpreadFit module.
+`modelObjName`|`"fireSense_SpreadFitted"`|a character vector indicating the name of a model object created with the fireSense_SpreadFit module.
 `data`|`"dataFireSense_SpreadPredict"`|a character vector indicating the names of objects in the `simList` environment in which to look for variables present in the model formula. `data` objects can be RasterLayers or RasterStacks. If variables are not found in `data` objects, they are searched in the `simList` environment.
 `mapping`|`NULL`|optional named vector or list of character strings mapping one or more variables in the model formula to those in data objects.
 `.runInitialTime`|`start(simList)`|when to start this module? By default, the start time of the simulation.
@@ -41,6 +41,8 @@ library(raster)
 library(SpaDES)
 
 set.seed(123)
+
+spadesModulesDirectory <- ".."
 
 # Define simulation parameters
 times <- list(start = 1, end = 1, timeunit = "year")
@@ -100,16 +102,10 @@ TODO: Write what is saved. (there is currently nothing saved, but this may chang
 # Data dependencies
 ## Input data
 - **fireSense_SpreadFitted**: an object of class `fireSense_SpreadFit` created with the fireSense_SpreadFit module.
-- **dataFireSense_SpreadPredict**: one or more RasterLayers or RasterStacks in which to look for variables present in the model formula.
+- **dataFireSense_SpreadPredict**: one or more RasterLayers, RasterStacks or RasterBricks in which to look for variables present in the model formula.
 
 ## Output data
-- **fireSense_SpreadPredicted**: an object whose class depends on those in input:
-
-Input object class | Output object class
-:-:|:-:
-`RasterLayer` | `RasterLayer`
-`RasterStack` | `RasterStack`
-||
+- **fireSense_SpreadPredicted**: an object whose class `RasterLayer`.
 
 # Links to other modules
 Predictions made with this module can be used to feed the fire spread component of landscape fire models (e.g. fireSense).

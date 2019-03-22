@@ -15,7 +15,7 @@ defineModule(sim, list(
   reqdPkgs = list("magrittr", "raster"),
   parameters = rbind(
     #defineParameter("paramName", "paramClass", default, min, max, "parameter description")),
-    defineParameter(name = "modelName", class = "character",
+    defineParameter(name = "modelObjName", class = "character",
                     default = "fireSense_SpreadFitted",
                     desc = "a character vector indicating the name of a model
                             object created with the fireSense_SpreadFit module."),
@@ -24,11 +24,7 @@ defineModule(sim, list(
                     desc = "a character vector indicating the names of objects
                             in the `simList` environment in which to look for
                             variables present in the model formula. `data`
-                            objects can be RasterLayers or RasterStacks. If
-                            variables are not found in `data` objects, they are
-                            searched in the `simList` environment. If variables 
-                            are not found in `data` objects, they are searched 
-                            in the `simList` environment."),
+                            objects can be RasterLayers, RasterStacks or RasterBricks."),
     defineParameter(name = "mapping", class = "character, list", default = NULL,
                     desc = "optional named vector or list of character strings
                             mapping one or more variables in the model formula
@@ -71,11 +67,28 @@ defineModule(sim, list(
 
 doEvent.fireSense_SpreadPredict = function(sim, eventTime, eventType, debug = FALSE) 
 {
+  moduleName <- current(sim)$moduleName
+  
   switch(
     eventType,
-    init = { sim <- spreadPredictInit(sim) }, 
-    run = { sim <- spreadPredictRun(sim) },
-    save = { sim <- spreadPredictSave(sim) },
+    init = { 
+      sim <- scheduleEvent(sim, eventTime = P(sim)$.runInitialTime, moduleName, "run")
+      
+      if (!is.na(P(sim)$.saveInitialTime))
+        sim <- scheduleEvent(sim, P(sim)$.saveInitialTime, moduleName, "save", .last())
+    }, 
+    run = { 
+      sim <- spreadPredictRun(sim)
+      
+      if (!is.na(P(sim)$.runInterval))
+        sim <- scheduleEvent(sim, time(sim) + P(sim)$.runInterval, moduleName, "run")
+    },
+    save = { 
+      sim <- spreadPredictSave(sim)
+      
+      if (!is.na(P(sim)$.saveInterval))
+        sim <- scheduleEvent(sim, time(sim) + P(sim)$.saveInterval, moduleName, "save", .last())  
+    },
     warning(paste("Undefined event type: '", current(sim)[1, "eventType", with = FALSE],
                   "' in module '", current(sim)[1, "moduleName", with = FALSE], "'", sep = ""))
   )
@@ -88,26 +101,12 @@ doEvent.fireSense_SpreadPredict = function(sim, eventTime, eventType, debug = FA
 #   - `modulenameInit()` function is required for initiliazation;
 #   - keep event functions short and clean, modularize by calling subroutines from section below.
 
-### template initialization
-spreadPredictInit <- function(sim)
-{
-  moduleName <- current(sim)$moduleName
-  
-  sim <- scheduleEvent(sim, eventTime = P(sim)$.runInitialTime, moduleName, "run")
-  
-  if (!is.na(P(sim)$.saveInitialTime))
-    sim <- scheduleEvent(sim, P(sim)$.saveInitialTime, moduleName, "save", .last())
-  
-  invisible(sim)
-}
-
 spreadPredictRun <- function(sim) 
 {
-  stopifnot(is(sim[[P(sim)$modelName]], "fireSense_SpreadFit"))
-  
   moduleName <- current(sim)$moduleName
-  currentTime <- time(sim, timeunit(sim))
-  endTime <- end(sim, timeunit(sim))
+  
+  if (!is(sim[[P(sim)$modelObjName]], "fireSense_SpreadFit"))
+    stop(moduleName, "> '", P(sim)$modelObjName, "' should be of class 'fireSense_SpreadFit")
   
   ## Toolbox: set of functions used internally by spreadPredictRun
     spreadPredictRaster <- function(model, data, par) 
@@ -119,7 +118,7 @@ spreadPredictRun <- function(sim)
     }
   
   # Load inputs in the data container
-  list2env(as.list(envir(sim)), envir = mod)
+  # list2env(as.list(envir(sim)), envir = mod)
 
   for(x in P(sim)$data) 
   {
@@ -138,7 +137,7 @@ spreadPredictRun <- function(sim)
   }
   
   ## In case there is a response in the formula remove it
-  terms <- sim[[P(sim)$modelName]]$formula %>% terms.formula %>% delete.response
+  terms <- sim[[P(sim)$modelObjName]]$formula %>% terms.formula %>% delete.response
   
   ## Mapping variables names to data
   if (!is.null(P(sim)$mapping))
@@ -167,9 +166,6 @@ spreadPredictRun <- function(sim)
     stack %>%
     predict(model = formula, fun = spreadPredictRaster, na.rm = TRUE, par = sim[[P(sim)$model]]$coef)
   
-  if (!is.na(P(sim)$.runInterval))
-    sim <- scheduleEvent(sim, currentTime + P(sim)$.runInterval, moduleName, "run")
-  
   invisible(sim)
 }
 
@@ -185,9 +181,6 @@ spreadPredictSave <- function(sim)
     sim$fireSense_SpreadPredicted, 
     file = file.path(paths(sim)$out, paste0("fireSense_SpreadPredicted_", timeUnit, currentTime, ".rds"))
   )
-  
-  if (!is.na(P(sim)$.saveInterval))
-    sim <- scheduleEvent(sim, currentTime + P(sim)$.saveInterval, moduleName, "save", .last())
   
   invisible(sim)
 }
