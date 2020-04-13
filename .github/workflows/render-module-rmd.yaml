@@ -17,7 +17,10 @@ jobs:
       - name: Install devtools, knitr and rmarkdown
         run: Rscript -e 'install.packages(c("devtools", "knitr", "rmarkdown"))'
       - name: Install SpaDES
-        run: Rscript -e 'devtools::install_github("PredictiveEcology/reproducible@development")'
+        run: |
+          Rscript -e 'devtools::install_github("PredictiveEcology/reproducible@development")'
+          Rscript -e 'devtools::install_github("PredictiveEcology/SpaDES.core@development")'
+          Rscript -e 'devtools::install_github("PredictiveEcology/SpaDES.tools@development")'
       - name: Install module package dependencies
         run: Rscript -e 'pkgs <- SpaDES.core::packages(modules = "fireSense_SpreadPredict", paths = "..")[[1]]; reproducible::Require(pkgs)'
       - name: Render module Rmd
