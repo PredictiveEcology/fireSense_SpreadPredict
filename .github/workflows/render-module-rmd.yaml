@@ -1,5 +1,12 @@
 on:
+  pull_request:
+    branches:
+      - master
+      - development
   push:
+    branches:
+      - master
+      - development
     paths:
       - fireSense_SpreadPredict.Rmd
       - fireSense_SpreadPredict.R
