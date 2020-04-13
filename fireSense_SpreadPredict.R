@@ -6,7 +6,7 @@ defineModule(sim, list(
   keywords = c("fire spread", "fireSense", "predict"),
   authors = c(person("Jean", "Marchal", email = "jean.d.marchal@gmail.com", role = c("aut", "cre"))),
   childModules = character(),
-  version = list(SpaDES.core = "0.1.0", fireSense_SpreadPredict = "0.0.1"),
+  version = list(fireSense_SpreadPredict = "0.0.1", SpaDES.core = "0.1.0"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",

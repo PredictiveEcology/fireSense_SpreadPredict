@@ -1,54 +1,38 @@
 ---
 title: "fireSense_SpreadPredict"
-author: "Jean Marchal (jean.d.marchal@gmail.com)"
+author:
+  - "Jean Marchal (<jean.d.marchal@gmail.com>)"
+  - "Alex M. Chubaty (<achubaty@for-cast.ca>)"
 date: "`r format(Sys.time(), '%B %Y')`"
 output:
   html_document: default
-  pdf_document: default
+editor_options: 
+  chunk_output_type: console
 ---
 
-# Overview
-Predicts a surface of fire spread probabilities using a model fitted with fireSense_SpreadFit.
-
-# Download the module
-```{r download module, eval = FALSE, echo = TRUE}
-library(SpaDES)
-
-moduleName <- "fireSense_SpreadPredict"
-
-spadesModulesDirectory <- tempdir() # Location where the module will be downloaded
-
-downloadModule(moduleName, path = spadesModulesDirectory)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Usage
-## Module parameters
-Name|Default|Description
-----|:-------|---------------------------------------------------------------------
-`modelObjName`|`"fireSense_SpreadFitted"`|a character vector indicating the name of a model object created with the fireSense_SpreadFit module.
-`data`|`"dataFireSense_SpreadPredict"`|a character vector indicating the names of objects in the `simList` environment in which to look for variables present in the model formula. `data` objects can be RasterLayers or RasterStacks. If variables are not found in `data` objects, they are searched in the `simList` environment.
-`mapping`|`NULL`|optional named vector or list of character strings mapping one or more variables in the model formula to those in data objects.
-`.runInitialTime`|`start(simList)`|when to start this module? By default, the start time of the simulation.
-`.runInterval`|`1`|optional. Interval between two runs of this module, expressed in units of simulation time. By default, 1 year.
-`.saveInitialTime`|`NA`|optional. When to start saving output to a file.
-`.saveInterval`|`NA`|optional. Interval between save events.
-|||
+# Overview
 
-## Usage example
-```{r module usage example, eval = FALSE}
+Predicts a surface of fire spread probabilities using a model fitted with `fireSense_SpreadFit`.
+
+# Usage
+
+```{r module-usage-init}
 library(magrittr)
 library(raster)
-library(SpaDES)
+library(SpaDES.core)
+library(SpaDES.tools)
 
 set.seed(123)
-
-spadesModulesDirectory <- ".."
 
 # Define simulation parameters
 times <- list(start = 1, end = 1, timeunit = "year")
 modules <- list("fireSense_SpreadPredict")
 paths <- list(
-  modulePath = spadesModulesDirectory
+  modulePath = ".."
 )
 
 # Create a random map of weather
@@ -74,7 +58,10 @@ parameters <- list(
 )
 
 # Objects to pass from the global environment to the simList environment
-objects <- c("weather", "fireSense_SpreadFitted")
+objects <- c(
+  "weather" = weather,
+  "fireSense_SpreadFitted" = fireSense_SpreadFitted
+)
 
 # Create the simList
 sim <- simInit(
@@ -84,29 +71,52 @@ sim <- simInit(
   params = parameters,
   objects = objects
 )
+```
 
+Run the model: <!-- TODO: this currently FAILS due to incorrect object class -->
+
+```{r module-usage-run, eval = FALSE}
 sim <- spades(sim)
 
-x11(); Plot(weather, sim$fireSense_SpreadPredicted)
+Plot(weather, sim$fireSense_SpreadPredicted)
+```
+
+# Parameters
+
+Provide a summary of user-visible parameters.
+
+```{r moduleParams, echo = FALSE}
+df_params <- moduleParams("fireSense_SpreadPredict", "..")
+knitr::kable(df_params)
 ```
 
 # Events
+
 Events are scheduled as follows:
 
 - Module initiation
 - Make predictions
 
 ## Saving
-TODO: Write what is saved. (there is currently nothing saved, but this may change in the future)
+
+There is currently nothing saved, but this may change in the future. <!-- TODO -->
 
 # Data dependencies
+
 ## Input data
-- **fireSense_SpreadFitted**: an object of class `fireSense_SpreadFit` created with the fireSense_SpreadFit module.
-- **dataFireSense_SpreadPredict**: one or more RasterLayers, RasterStacks or RasterBricks in which to look for variables present in the model formula.
+
+```{r moduleInputs, echo = FALSE}
+df_inputs <- moduleInputs("fireSense_SpreadPredict", "..")
+knitr::kable(df_inputs)
+```
 
 ## Output data
-- **fireSense_SpreadPredicted**: an object whose class `RasterLayer`.
+
+```{r moduleOutputs, echo = FALSE}
+df_outputs <- moduleOutputs("fireSense_SpreadPredict", "..")
+knitr::kable(df_outputs)
+```
 
 # Links to other modules
-Predictions made with this module can be used to feed the fire spread component of landscape fire models (e.g. fireSense).
 
+Predictions made with this module can be used to feed the fire spread component of landscape fire models (e.g., `fireSense`).
