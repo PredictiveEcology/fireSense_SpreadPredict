@@ -20,32 +20,29 @@ defineModule(sim, list(
     defineParameter(
       name = "modelObjName", class = "character",
       default = "fireSense_SpreadFitted",
-      desc = "a character vector indicating the name of a model
-                            object created with the fireSense_SpreadFit module."
+      desc = paste("a character vector indicating the name of a model object created with",
+                   "the fireSense_SpreadFit module.")
     ),
     defineParameter(
       name = "data", class = "character",
       default = "dataFireSense_SpreadPredict",
-      desc = "a character vector indicating the names of objects
-                            in the `simList` environment in which to look for
-                            variables present in the model formula. `data`
-                            objects can be RasterLayers, RasterStacks or RasterBricks."
+      desc = paste("a character vector indicating the names of objects in the simList environment",
+                   "in which to look for variables present in the model formula.",
+                   "`data` objects can be RasterLayers, RasterStacks or RasterBricks.")
     ),
     defineParameter(
       name = "mapping", class = "character, list", default = NULL,
-      desc = "optional named vector or list of character strings
-                            mapping one or more variables in the model formula
-                            to those in data objects."
+      desc = paste("optional named vector or list of character strings mapping one or more",
+                   "variables in the model formula to those in data objects.")
     ),
     defineParameter(
       name = ".runInitialTime", class = "numeric", default = start(sim),
-      desc = "when to start this module? By default, the start
-                            time of the simulation."
+      desc = "when to start this module? By default, the start time of the simulation."
     ),
     defineParameter(
       name = ".runInterval", class = "numeric", default = 1,
-      desc = "optional. Interval between two runs of this module,
-                            expressed in units of simulation time. By default, 1 year."
+      desc = paste("optional. Interval between two runs of this module, expressed in units of simulation time.",
+                   "By default, 1 year.")
     ),
     defineParameter(
       name = ".saveInitialTime", class = "numeric", default = NA,
@@ -55,7 +52,11 @@ defineModule(sim, list(
       name = ".saveInterval", class = "numeric", default = NA,
       desc = "optional. Interval between save events."
     ),
-    defineParameter(".useCache", "logical", FALSE, NA, NA, "Should this entire module be run with caching activated? This is generally intended for data-type modules, where stochasticity and time are not relevant")
+    defineParameter(".useCache", "logical", FALSE, NA, NA,
+                    paste("Should this entire module be run with caching activated?",
+                          "This is generally intended for data-type modules, where stochasticity",
+                          "and time are not relevant")
+    )
   ),
   inputObjects = rbind(
     expectsInput(
@@ -118,7 +119,7 @@ doEvent.fireSense_SpreadPredict <- function(sim, eventTime, eventType, debug = F
 
 ## event functions
 #   - follow the naming convention `modulenameEventtype()`;
-#   - `modulenameInit()` function is required for initiliazation;
+#   - `modulenameInit()` function is required for initialization;
 #   - keep event functions short and clean, modularize by calling subroutines from section below.
 
 spreadPredictRun <- function(sim) {
