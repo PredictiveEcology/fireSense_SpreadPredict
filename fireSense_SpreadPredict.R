@@ -4,7 +4,9 @@ defineModule(sim, list(
   name = "fireSense_SpreadPredict",
   description = "Predicts a surface of fire spread probilities using a model fitted with fireSense_SpreadFit.",
   keywords = c("fire spread", "fireSense", "predict"),
-  authors = c(person("Jean", "Marchal", email = "jean.d.marchal@gmail.com", role = c("aut", "cre"))),
+  authors = c(
+    person("Jean", "Marchal", email = "jean.d.marchal@gmail.com", role = c("aut", "cre"))
+  ),
   childModules = character(),
   version = list(fireSense_SpreadPredict = "0.0.1", SpaDES.core = "0.1.0"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
