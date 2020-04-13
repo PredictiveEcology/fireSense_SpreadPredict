@@ -12,6 +12,7 @@
 <meta name="author" content="Jean Marchal (jean.d.marchal@gmail.com)" />
 <meta name="author" content="Alex M. Chubaty (achubaty@for-cast.ca)" />
 
+<meta name="date" content="2020-04-13" />
 
 <title>fireSense_SpreadPredict</title>
 
@@ -366,7 +367,7 @@ summary {
 <h1 class="title toc-ignore">fireSense_SpreadPredict</h1>
 <h4 class="author">Jean Marchal (<a href="mailto:jean.d.marchal@gmail.com" class="email">jean.d.marchal@gmail.com</a>)</h4>
 <h4 class="author">Alex M. Chubaty (<a href="mailto:achubaty@for-cast.ca" class="email">achubaty@for-cast.ca</a>)</h4>
-<h4 class="date">April 2020</h4>
+<h4 class="date">13 April 2020</h4>
 
 </div>
 
@@ -450,21 +451,21 @@ sim &lt;- simInit(
 )</code></pre>
 <pre><code>## Setting:
 ##   options(
-##     spades.modulePath = &#39;/home/achubaty/Documents/GitHub/fireSense&#39;
+##     spades.modulePath = &#39;/Users/runner/runners/2.168.0/work/fireSense_SpreadPredict&#39;
 ##   )</code></pre>
 <pre><code>## Paths set to:
 ##   options(
-##     rasterTmpDir = &#39;/tmp/Rtmpi1Xpxd/raster&#39;
-##     reproducible.cachePath = &#39;/tmp/Rtmpi1Xpxd/reproducible/cache&#39;
-##     spades.inputPath = &#39;/tmp/RtmpFeoruA/SpaDES/inputs&#39;
-##     spades.outputPath = &#39;/tmp/RtmpFeoruA/SpaDES/outputs&#39;
-##     spades.modulePath = &#39;/home/achubaty/Documents/GitHub/fireSense&#39;
+##     rasterTmpDir = &#39;/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpYXUSD0/raster&#39;
+##     reproducible.cachePath = &#39;/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpYXUSD0/reproducible/cache&#39;
+##     spades.inputPath = &#39;/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpK9u8KU/SpaDES/inputs&#39;
+##     spades.outputPath = &#39;/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpK9u8KU/SpaDES/outputs&#39;
+##     spades.modulePath = &#39;/Users/runner/runners/2.168.0/work/fireSense_SpreadPredict&#39;
 ##   )</code></pre>
-<pre><code>## fireSense_SpreadPredict: module code: spreadPredictRun : line could not be checked &#39;spreadPredictRaster &lt;- function(model, data, par) {&#39;)</code></pre>
-<pre><code>## fireSense_SpreadPredict: module code: fireSense_SpreadFitted, dataFireSense_SpreadPredict are declared in metadata inputObjects, but no default(s) are provided in .inputObjects</code></pre>
-<pre><code>## fireSense_SpreadPredict: module code: dataFireSense_SpreadPredict is declared in metadata inputObjects, but is not used in the module</code></pre>
-<pre><code>## fireSense_SpreadPredict: module code: spreadPredictSave: local variable &#39;moduleName&#39; assigned but may not be used</code></pre>
-<pre><code>## fireSense_SpreadPredict: inputObjects: x is used from sim inside spreadPredictRun, but is not declared in metadata inputObjects</code></pre>
+<pre><code>## [35mfireSense_SpreadPredict: module code: spreadPredictRun : line could not be checked &#39;spreadPredictRaster &lt;- function(model, data, par) {&#39;)[39m</code></pre>
+<pre><code>## [35mfireSense_SpreadPredict: module code: fireSense_SpreadFitted, dataFireSense_SpreadPredict are declared in metadata inputObjects, but no default(s) are provided in .inputObjects[39m</code></pre>
+<pre><code>## [35mfireSense_SpreadPredict: module code: dataFireSense_SpreadPredict is declared in metadata inputObjects, but is not used in the module[39m</code></pre>
+<pre><code>## [35mfireSense_SpreadPredict: module code: spreadPredictSave: local variable &#39;moduleName&#39; assigned but may not be used[39m</code></pre>
+<pre><code>## [35mfireSense_SpreadPredict: inputObjects: x is used from sim inside spreadPredictRun, but is not declared in metadata inputObjects[39m</code></pre>
 <p>Run the model: <!-- TODO: this currently FAILS due to incorrect object class --></p>
 <pre class="r"><code>sim &lt;- spades(sim)
 
