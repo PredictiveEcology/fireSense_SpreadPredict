@@ -27,7 +27,7 @@ jobs:
         run: |
           Rscript -e 'devtools::install_github("PredictiveEcology/reproducible@development")'
           Rscript -e 'devtools::install_github("PredictiveEcology/SpaDES.core@development")'
-          Rscript -e 'devtools::install_github("PredictiveEcology/SpaDES.tools@development")'
+          Rscript -e 'devtools::install_github("PredictiveEcology/SpaDES.tools@development", dependencies = TRUE)'
       - name: Install module package dependencies
         run: Rscript -e 'pkgs <- SpaDES.core::packages(modules = "fireSense_SpreadPredict", paths = "..")[[1]]; reproducible::Require(pkgs)'
       - name: Render module Rmd
