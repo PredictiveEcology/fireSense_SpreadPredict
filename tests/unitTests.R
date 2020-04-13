@@ -3,7 +3,7 @@
 # please specify the package you need to run the sim function in the test files.
 
 # to test all the test files in the tests folder:
-test_dir("fireSense_SpreadPredict/tests/testthat")
+testthat::test_dir("tests/testthat")
 
 # Alternative, you can use test_file to test individual test file, e.g.:
-test_file("fireSense_SpreadPredict/tests/testthat/test-template.R")
+testthat::test_file("tests/testthat/test-SpreadPredict.R")
