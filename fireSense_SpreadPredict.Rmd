@@ -3,7 +3,7 @@ title: "fireSense_SpreadPredict"
 author:
   - "Jean Marchal (<jean.d.marchal@gmail.com>)"
   - "Alex M. Chubaty (<achubaty@for-cast.ca>)"
-date: "`r format(Sys.time(), '%B %Y')`"
+date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
   html_document: default
 editor_options: 
