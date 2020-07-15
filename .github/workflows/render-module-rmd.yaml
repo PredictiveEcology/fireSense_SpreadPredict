@@ -25,6 +25,7 @@ jobs:
         run: Rscript -e 'install.packages(c("devtools", "knitr", "rmarkdown"))'
       - name: Install SpaDES
         run: |
+          Rscript -e 'devtools::install_github("PredictiveEcology/Require@development", dependencies = TRUE)'
           Rscript -e 'devtools::install_github("PredictiveEcology/reproducible@development", dependencies = TRUE)'
           Rscript -e 'devtools::install_github("PredictiveEcology/SpaDES.core@development", dependencies = TRUE)'
           Rscript -e 'devtools::install_github("PredictiveEcology/SpaDES.tools@development", dependencies = TRUE)'
