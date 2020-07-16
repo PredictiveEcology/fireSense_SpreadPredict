@@ -3,6 +3,7 @@ title: "fireSense_SpreadPredict"
 author:
   - "Jean Marchal (<jean.d.marchal@gmail.com>)"
   - "Alex M. Chubaty (<achubaty@for-cast.ca>)"
+  - "Tati Micheletti (<tati.micheletti@gmail.com>)"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
   html_document: default
@@ -11,7 +12,7 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, results = "hold")
 ```
 
 # Overview
