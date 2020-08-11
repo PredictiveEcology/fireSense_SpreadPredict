@@ -16,21 +16,36 @@ name: Render module Rmd
 jobs:
   render:
     name: Render module Rmd
-    runs-on: ubuntu-18.04
+    runs-on: macOS-latest
     steps:
       - uses: actions/checkout@v2
       - uses: r-lib/actions/setup-r@v1
       - uses: r-lib/actions/setup-pandoc@v1
-      - name: Install knitr, rmarkdown, and remotes
-        run: Rscript -e 'install.packages(c("devtools", "knitr", "rmarkdown"))'
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+      - name: Install GDAL
+        run: |
+          brew install pkg-config
+          brew install gdal
+      - name: Install remotes, knitr, rmarkdown
+        run: |
+          install.packages("remotes")
+          remotes::install_cran("rmarkdown")
+          remotes::install_cran("knitr")
+        shell: Rscript {0}
       - name: Install SpaDES
         run: |
-          Rscript -e 'remotes::install_github("PredictiveEcology/Require@development", dependencies = TRUE)'
-          Rscript -e 'remotes::install_github("PredictiveEcology/reproducible@development", dependencies = TRUE)'
-          Rscript -e 'remotes::install_github("PredictiveEcology/SpaDES.core@development", dependencies = TRUE)'
-          Rscript -e 'remotes::install_github("PredictiveEcology/SpaDES.tools@development", dependencies = TRUE)'
+          remotes::install_github("PredictiveEcology/Require@development", dependencies = TRUE)
+          remotes::install_github("PredictiveEcology/reproducible@development", dependencies = TRUE)
+          remotes::install_github("PredictiveEcology/SpaDES.core@development", dependencies = TRUE)
+          remotes::install_github("PredictiveEcology/SpaDES.tools@development", dependencies = TRUE)
+        shell: Rscript {0}
       - name: Install module package dependencies
-        run: Rscript -e 'pkgs <- SpaDES.core::packages(modules = "fireSense_SpreadPredict", paths = "..")[[1]]; reproducible::Require(pkgs)'
+        run: |
+          pkgs <- SpaDES.core::packages(modules = "fireSense_SpreadPredict", paths = "..")[[1]]
+          Require::Require(pkgs)
+        shell: Rscript {0}
       - name: Render module Rmd
         run: Rscript -e 'rmarkdown::render("fireSense_SpreadPredict.Rmd", encoding = "UTF-8")'
       - name: Commit results
