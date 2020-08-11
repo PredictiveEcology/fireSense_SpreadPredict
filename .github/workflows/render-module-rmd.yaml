@@ -32,15 +32,14 @@ jobs:
             libudunits2-dev \
             libxml2-dev \
             python3-gdal
-      - name: Set locale ## needed for stringfish
-        run: |
-          sudo locale-gen en_CA.UTF-8
-          sudo update-locale LANG=en_CA.UTF-8
       - name: Install remotes, knitr, rmarkdown
         run: |
           install.packages("remotes")
           remotes::install_cran("rmarkdown")
           remotes::install_cran("knitr")
+        shell: Rscript {0}
+      - name: Install legacy qs ## (temporary; https://github.com/traversc/stringfish/issues/4)
+        run: remotes::install_github("traversc/qs@legacy")
         shell: Rscript {0}
       - name: Install SpaDES
         run: |
