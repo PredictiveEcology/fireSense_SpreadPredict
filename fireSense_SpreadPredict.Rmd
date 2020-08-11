@@ -2,6 +2,7 @@
 title: "fireSense_SpreadPredict"
 author:
   - "Jean Marchal (<jean.d.marchal@gmail.com>)"
+  - "Eliot McIntire (<eliot.mcintire@canada.ca>)"
   - "Alex M. Chubaty (<achubaty@for-cast.ca>)"
   - "Tati Micheletti (<tati.micheletti@gmail.com>)"
 date: "`r format(Sys.time(), '%d %B %Y')`"
