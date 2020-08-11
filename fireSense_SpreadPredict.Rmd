@@ -1,5 +1,5 @@
 ---
-title: "fireSense_SpreadPredict"
+title: "`fireSense_SpreadPredict`"
 author:
   - "Jean Marchal (<jean.d.marchal@gmail.com>)"
   - "Alex M. Chubaty (<achubaty@for-cast.ca>)"
