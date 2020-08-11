@@ -35,6 +35,7 @@ jobs:
             libgeos-dev \
             libgit2-dev \
             libglpk-dev \
+            libmagick++-dev \
             libproj-dev \
             libudunits2-dev \
             libxml2-dev \
