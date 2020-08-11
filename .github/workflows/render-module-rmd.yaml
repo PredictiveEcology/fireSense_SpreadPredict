@@ -16,11 +16,7 @@ name: Render module Rmd
 jobs:
   render:
     name: Render module Rmd
-    runs-on:
-      - os: ubuntu-18.04
-      - r: 'release'
-      - rspm: "https://packagemanager.rstudio.com/cran/__linux__/bionic/latest"
-      - http-user-agent: "R/4.0.0 (ubuntu-18.04) R (4.0.0 x86_64-pc-linux-gnu x86_64 linux-gnu) on GitHub Actions"
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
       - uses: r-lib/actions/setup-r@v1
