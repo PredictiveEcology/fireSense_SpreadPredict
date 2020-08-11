@@ -16,19 +16,23 @@ name: Render module Rmd
 jobs:
   render:
     name: Render module Rmd
-    runs-on: macOS-latest
+    runs-on:
+      - os: ubuntu-18.04
+      - r: 'release'
+      - rspm: "https://packagemanager.rstudio.com/cran/__linux__/bionic/latest"
+      - http-user-agent: "R/4.0.0 (ubuntu-18.04) R (4.0.0 x86_64-pc-linux-gnu x86_64 linux-gnu) on GitHub Actions"
     steps:
       - uses: actions/checkout@v2
       - uses: r-lib/actions/setup-r@v1
       - uses: r-lib/actions/setup-pandoc@v1
-      - name: Install devtools, knitr and rmarkdown
+      - name: Install knitr, rmarkdown, and remotes
         run: Rscript -e 'install.packages(c("devtools", "knitr", "rmarkdown"))'
       - name: Install SpaDES
         run: |
-          Rscript -e 'devtools::install_github("PredictiveEcology/Require@development", dependencies = TRUE)'
-          Rscript -e 'devtools::install_github("PredictiveEcology/reproducible@development", dependencies = TRUE)'
-          Rscript -e 'devtools::install_github("PredictiveEcology/SpaDES.core@development", dependencies = TRUE)'
-          Rscript -e 'devtools::install_github("PredictiveEcology/SpaDES.tools@development", dependencies = TRUE)'
+          Rscript -e 'remotes::install_github("PredictiveEcology/Require@development", dependencies = TRUE)'
+          Rscript -e 'remotes::install_github("PredictiveEcology/reproducible@development", dependencies = TRUE)'
+          Rscript -e 'remotes::install_github("PredictiveEcology/SpaDES.core@development", dependencies = TRUE)'
+          Rscript -e 'remotes::install_github("PredictiveEcology/SpaDES.tools@development", dependencies = TRUE)'
       - name: Install module package dependencies
         run: Rscript -e 'pkgs <- SpaDES.core::packages(modules = "fireSense_SpreadPredict", paths = "..")[[1]]; reproducible::Require(pkgs)'
       - name: Render module Rmd
