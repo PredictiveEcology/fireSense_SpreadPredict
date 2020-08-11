@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE, results = "hold")
 
 # Overview
 
-Predicts a surface of fire spread probabilities using a model fitted with `fireSense_SpreadFit`.
+Predicts a surface of fire spread probabilities using a model previously fit with `fireSense_SpreadFit`.
 
 # Usage
 
