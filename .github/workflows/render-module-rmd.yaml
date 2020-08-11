@@ -63,5 +63,7 @@ jobs:
         run: Rscript -e 'rmarkdown::render("fireSense_SpreadPredict.Rmd", encoding = "UTF-8")'
       - name: Commit results
         run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
           git commit fireSense_SpreadPredict.html -m 'Re-build fireSense_SpreadPredict.Rmd' || echo "No changes to commit"
           git push https://${{github.actor}}:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}.git HEAD:${{ github.ref }} || echo "No changes to commit"
