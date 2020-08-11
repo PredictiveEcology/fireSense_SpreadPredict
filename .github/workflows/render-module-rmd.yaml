@@ -43,10 +43,10 @@ jobs:
         shell: Rscript {0}
       - name: Install SpaDES
         run: |
-          remotes::install_github("PredictiveEcology/Require@development", dependencies = TRUE)
-          remotes::install_github("PredictiveEcology/reproducible@development", dependencies = TRUE)
-          remotes::install_github("PredictiveEcology/SpaDES.core@development", dependencies = TRUE)
-          remotes::install_github("PredictiveEcology/SpaDES.tools@development", dependencies = TRUE)
+          remotes::install_github("PredictiveEcology/Require@development", dependencies = TRUE, upgrade = "never")
+          remotes::install_github("PredictiveEcology/reproducible@development", dependencies = TRUE, upgrade = "never")
+          remotes::install_github("PredictiveEcology/SpaDES.core@development", dependencies = TRUE, upgrade = "never")
+          remotes::install_github("PredictiveEcology/SpaDES.tools@development", dependencies = TRUE, upgrade = "never")
         shell: Rscript {0}
       - name: Install module package dependencies
         run: |
