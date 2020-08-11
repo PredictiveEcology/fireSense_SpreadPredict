@@ -38,15 +38,13 @@ jobs:
           remotes::install_cran("rmarkdown")
           remotes::install_cran("knitr")
         shell: Rscript {0}
-      - name: Install legacy qs ## (temporary; https://github.com/traversc/stringfish/issues/4)
-        run: remotes::install_github("traversc/qs@legacy")
-        shell: Rscript {0}
       - name: Install SpaDES
         run: |
-          remotes::install_github("PredictiveEcology/Require@development", dependencies = TRUE, upgrade = "never")
-          remotes::install_github("PredictiveEcology/reproducible@development", dependencies = TRUE, upgrade = "never")
-          remotes::install_github("PredictiveEcology/SpaDES.core@development", dependencies = TRUE, upgrade = "never")
-          remotes::install_github("PredictiveEcology/SpaDES.tools@development", dependencies = TRUE, upgrade = "never")
+          remotes::install_github("traversc/qs@legacy") ## temporary (traversc/stringfish#4)
+          remotes::install_github("PredictiveEcology/Require@development", dependencies = TRUE, upgrade = FALSE)
+          remotes::install_github("PredictiveEcology/reproducible@development", dependencies = TRUE, upgrade = FALSE)
+          remotes::install_github("PredictiveEcology/SpaDES.core@development", dependencies = TRUE, upgrade = FALSE)
+          remotes::install_github("PredictiveEcology/SpaDES.tools@development", dependencies = TRUE, upgrade = FALSE)
         shell: Rscript {0}
       - name: Install module package dependencies
         run: |
