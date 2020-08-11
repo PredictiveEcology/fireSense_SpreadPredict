@@ -8,6 +8,7 @@ on:
       - master
       - development
     paths:
+      - .github/workflows/render-module-rmd.yaml
       - fireSense_SpreadPredict.Rmd
       - fireSense_SpreadPredict.R
 
