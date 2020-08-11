@@ -96,8 +96,8 @@ knitr::kable(df_params)
 
 Events are scheduled as follows:
 
-- Module initiation
-- Make predictions
+- Module initiation;
+- Make predictions.
 
 ## Saving
 
