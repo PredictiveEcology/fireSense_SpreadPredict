@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE, results = "hold")
 
 # Overview
 
-Predicts a surface of fire spread probabilities using a model fitted with `fireSense_SpreadFit`.
+Predicts a surface (raster) of fire spread probabilities using a model previously fit with `fireSense_SpreadFit`.
 
 # Usage
 
@@ -43,9 +43,10 @@ weather <- raster(nrows = ny, ncols = nx, xmn = -nx/2, xmx = nx/2, ymn = -ny/2, 
 
 # Create a typical output of fireSense_SpreadFit
 fireSense_SpreadFitted <- list(
-  formula = ~ weather2 -1,
+  formula = ~ weather2 - 1,
   coef = setNames(c(0.3, 3, 0.1, 1.5, 3),
-                  c("A", "B", "D", "G", "weather")) # A, B, D, G are parameters of the 5-parameters logistic function
+                  c("A", "B", "D", "G", "weather"))
+  ## A, B, D, G are parameters of the 5-parameters logistic function
 )
 class(fireSense_SpreadFitted) <- "fireSense_SpreadFit"
 
@@ -95,8 +96,8 @@ knitr::kable(df_params)
 
 Events are scheduled as follows:
 
-- Module initiation
-- Make predictions
+- Module initiation;
+- Make predictions.
 
 ## Saving
 
@@ -120,4 +121,4 @@ knitr::kable(df_outputs)
 
 # Links to other modules
 
-Predictions made with this module can be used to feed the fire spread component of landscape fire models (e.g., `fireSense`).
+Predictions made with this module can be used with the fire spread component of landscape fire models (e.g., `fireSense`). <!-- TODO -->
