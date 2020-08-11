@@ -17,6 +17,11 @@ jobs:
   render:
     name: Render module Rmd
     runs-on: ubuntu-20.04
+
+    env:
+      RSPM: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
       - uses: actions/checkout@v2
       - uses: r-lib/actions/setup-r@v1
