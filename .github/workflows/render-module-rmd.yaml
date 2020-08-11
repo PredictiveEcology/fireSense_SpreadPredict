@@ -23,7 +23,7 @@ jobs:
       - uses: r-lib/actions/setup-pandoc@v1
       - name: Install GDAL and other dependencies
         run: |
-          apt-get install -y \
+          sudo apt-get install -y \
             libcurl4-openssl-dev \
             libgdal-dev \
             libgeos-dev \
