@@ -1,5 +1,3 @@
-# Everything in this file gets sourced during simInit, and all functions and objects
-# are put into the simList. To use objects and functions, use sim$xxx.
 defineModule(sim, list(
   name = "fireSense_SpreadPredict",
   description = "Predicts a surface of fire spread probilities using a model fitted with fireSense_SpreadFit.",
@@ -254,7 +252,7 @@ spreadPredictRun <- function(sim) {
     set(fireSenseDataDTx1000, NULL, "spreadProb", logistic2p(mat %*% covPars, logisticPars,
                                                              par1 = P(sim)$lowerSpreadProb))
   }
-  
+
   if (time(sim) == start(sim)) {
     # We want a full distribution of the spread prob for each fuel type for the
     # whole range of MDC

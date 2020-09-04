@@ -11,8 +11,9 @@
 
 <meta name="author" content="Jean Marchal (jean.d.marchal@gmail.com)" />
 <meta name="author" content="Alex M. Chubaty (achubaty@for-cast.ca)" />
+<meta name="author" content="Tati Micheletti (tati.micheletti@gmail.com)" />
 
-<meta name="date" content="2020-04-13" />
+<meta name="date" content="2020-08-11" />
 
 <title>fireSense_SpreadPredict</title>
 
@@ -367,14 +368,15 @@ summary {
 <h1 class="title toc-ignore">fireSense_SpreadPredict</h1>
 <h4 class="author">Jean Marchal (<a href="mailto:jean.d.marchal@gmail.com" class="email">jean.d.marchal@gmail.com</a>)</h4>
 <h4 class="author">Alex M. Chubaty (<a href="mailto:achubaty@for-cast.ca" class="email">achubaty@for-cast.ca</a>)</h4>
-<h4 class="date">13 April 2020</h4>
+<h4 class="author">Tati Micheletti (<a href="mailto:tati.micheletti@gmail.com" class="email">tati.micheletti@gmail.com</a>)</h4>
+<h4 class="date">11 August 2020</h4>
 
 </div>
 
 
 <div id="overview" class="section level1">
 <h1>Overview</h1>
-<p>Predicts a surface of fire spread probabilities using a model fitted with <code>fireSense_SpreadFit</code>.</p>
+<p>Predicts a surface (raster) of fire spread probabilities using a model previously fit with <code>fireSense_SpreadFit</code>.</p>
 </div>
 <div id="usage" class="section level1">
 <h1>Usage</h1>
@@ -397,14 +399,9 @@ library(raster)</code></pre>
 <pre><code>## The following object is masked from &#39;package:utils&#39;:
 ## 
 ##     citation</code></pre>
-<pre class="r"><code>library(SpaDES.tools)</code></pre>
-<pre><code>## Registered S3 methods overwritten by &#39;ffbase&#39;:
-##   method   from
-##   [.ff     ff  
-##   [.ffdf   ff  
-##   [&lt;-.ff   ff  
-##   [&lt;-.ffdf ff</code></pre>
-<pre class="r"><code>set.seed(123)
+<pre class="r"><code>library(SpaDES.tools)
+
+set.seed(123)
 
 # Define simulation parameters
 times &lt;- list(start = 1, end = 1, timeunit = &quot;year&quot;)
@@ -420,9 +417,10 @@ weather &lt;- raster(nrows = ny, ncols = nx, xmn = -nx/2, xmx = nx/2, ymn = -ny/
 <pre><code>## Loading required namespace: RandomFields</code></pre>
 <pre class="r"><code># Create a typical output of fireSense_SpreadFit
 fireSense_SpreadFitted &lt;- list(
-  formula = ~ weather2 -1,
+  formula = ~ weather2 - 1,
   coef = setNames(c(0.3, 3, 0.1, 1.5, 3),
-                  c(&quot;A&quot;, &quot;B&quot;, &quot;D&quot;, &quot;G&quot;, &quot;weather&quot;)) # A, B, D, G are parameters of the 5-parameters logistic function
+                  c(&quot;A&quot;, &quot;B&quot;, &quot;D&quot;, &quot;G&quot;, &quot;weather&quot;))
+  ## A, B, D, G are parameters of the 5-parameters logistic function
 )
 class(fireSense_SpreadFitted) &lt;- &quot;fireSense_SpreadFit&quot;
 
@@ -451,21 +449,31 @@ sim &lt;- simInit(
 )</code></pre>
 <pre><code>## Setting:
 ##   options(
-##     spades.modulePath = &#39;/Users/runner/runners/2.168.0/work/fireSense_SpreadPredict&#39;
+##     spades.modulePath = &#39;/home/runner/work/fireSense_SpreadPredict&#39;
 ##   )</code></pre>
 <pre><code>## Paths set to:
 ##   options(
-##     rasterTmpDir = &#39;/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpYXUSD0/raster&#39;
-##     reproducible.cachePath = &#39;/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpYXUSD0/reproducible/cache&#39;
-##     spades.inputPath = &#39;/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpK9u8KU/SpaDES/inputs&#39;
-##     spades.outputPath = &#39;/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpK9u8KU/SpaDES/outputs&#39;
-##     spades.modulePath = &#39;/Users/runner/runners/2.168.0/work/fireSense_SpreadPredict&#39;
+##     rasterTmpDir = &#39;/tmp/RtmpzG3Myg/raster&#39;
+##     reproducible.cachePath = &#39;/tmp/RtmpzG3Myg/Require/cache&#39;
+##     spades.inputPath = &#39;/tmp/RtmplroZAd/SpaDES/inputs&#39;
+##     spades.outputPath = &#39;/tmp/RtmplroZAd/SpaDES/outputs&#39;
+##     spades.modulePath = &#39;/home/runner/work/fireSense_SpreadPredict&#39;
 ##   )</code></pre>
-<pre><code>## [35mfireSense_SpreadPredict: module code: spreadPredictRun : line could not be checked &#39;spreadPredictRaster &lt;- function(model, data, par) {&#39;)[39m</code></pre>
+<pre><code>## Loading required package: ggplot2</code></pre>
+<pre><code>## Loading required package: Matrix</code></pre>
+<pre><code>## Loading required package: fireSenseUtils</code></pre>
+<pre><code>## Registered S3 method overwritten by &#39;pryr&#39;:
+##   method      from
+##   print.bytes Rcpp</code></pre>
+<pre><code>## Loading required package: viridis</code></pre>
+<pre><code>## Loading required package: viridisLite</code></pre>
 <pre><code>## [35mfireSense_SpreadPredict: module code: fireSense_SpreadFitted, dataFireSense_SpreadPredict are declared in metadata inputObjects, but no default(s) are provided in .inputObjects[39m</code></pre>
-<pre><code>## [35mfireSense_SpreadPredict: module code: dataFireSense_SpreadPredict is declared in metadata inputObjects, but is not used in the module[39m</code></pre>
-<pre><code>## [35mfireSense_SpreadPredict: module code: spreadPredictSave: local variable &#39;moduleName&#39; assigned but may not be used[39m</code></pre>
-<pre><code>## [35mfireSense_SpreadPredict: inputObjects: x is used from sim inside spreadPredictRun, but is not declared in metadata inputObjects[39m</code></pre>
+<pre><code>## [35mfireSense_SpreadPredict: module code: getFireSenseSpreadLays: parameter &#39;getFireSenseSpreadLays&#39; may not be used[39m</code></pre>
+<pre><code>## [35mfireSense_SpreadPredict: module code: rescaleKnown: parameter &#39;maxOrig&#39; may not be used[39m</code></pre>
+<pre><code>## [35mfireSense_SpreadPredict: module code: rescaleKnown: parameter &#39;minNew&#39; may not be used[39m</code></pre>
+<pre><code>## [35mfireSense_SpreadPredict: outputObjects: spreadPredictedProbability is assigned to sim inside doEvent.fireSense_SpreadPredict, but is not declared in metadata outputObjects[39m</code></pre>
+<pre><code>## [35mfireSense_SpreadPredict: outputObjects: spreadProbFuelType, classType, Year1 are assigned to sim inside spreadPredictRun, but are not declared in metadata outputObjects[39m</code></pre>
+<pre><code>## [35mfireSense_SpreadPredict: inputObjects: x, formula, flammableRTM, covMinMax, cn, bestCoef, fireSense_SpreadFitted_year2011, classType, spreadProbFuelType, Year1, spreadPredictedProbability are used from sim inside spreadPredictRun, but are not declared in metadata inputObjects[39m</code></pre>
 <p>Run the model: <!-- TODO: this currently FAILS due to incorrect object class --></p>
 <pre class="r"><code>sim &lt;- spades(sim)
 
@@ -475,6 +483,14 @@ Plot(weather, sim$fireSense_SpreadPredicted)</code></pre>
 <h1>Parameters</h1>
 <p>Provide a summary of user-visible parameters.</p>
 <table>
+<colgroup>
+<col width="6%"></col>
+<col width="6%"></col>
+<col width="5%"></col>
+<col width="1%"></col>
+<col width="1%"></col>
+<col width="79%"></col>
+</colgroup>
 <thead>
 <tr class="header">
 <th align="left">paramName</th>
@@ -489,7 +505,7 @@ Plot(weather, sim$fireSense_SpreadPredicted)</code></pre>
 <tr class="odd">
 <td align="left">modelObjName</td>
 <td align="left">character</td>
-<td align="left">fireSense_SpreadFitted</td>
+<td align="left">fireSens….</td>
 <td align="left">NA</td>
 <td align="left">NA</td>
 <td align="left">a character vector indicating the name of a model object created with the fireSense_SpreadFit module.</td>
@@ -497,7 +513,7 @@ Plot(weather, sim$fireSense_SpreadPredicted)</code></pre>
 <tr class="even">
 <td align="left">data</td>
 <td align="left">character</td>
-<td align="left">dataFireSense_SpreadPredict</td>
+<td align="left">dataFire….</td>
 <td align="left">NA</td>
 <td align="left">NA</td>
 <td align="left">a character vector indicating the names of objects in the simList environment in which to look for variables present in the model formula. <code>data</code> objects can be RasterLayers, RasterStacks or RasterBricks.</td>
@@ -505,7 +521,7 @@ Plot(weather, sim$fireSense_SpreadPredicted)</code></pre>
 <tr class="odd">
 <td align="left">mapping</td>
 <td align="left">character, list</td>
-<td align="left">NULL</td>
+<td align="left"></td>
 <td align="left">NA</td>
 <td align="left">NA</td>
 <td align="left">optional named vector or list of character strings mapping one or more variables in the model formula to those in data objects.</td>
@@ -543,6 +559,30 @@ Plot(weather, sim$fireSense_SpreadPredicted)</code></pre>
 <td align="left">optional. Interval between save events.</td>
 </tr>
 <tr class="even">
+<td align="left">lowerSpreadProb</td>
+<td align="left">numeric</td>
+<td align="left">0.13</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">Lower spread probability</td>
+</tr>
+<tr class="odd">
+<td align="left">typesOfFuel</td>
+<td align="left">character</td>
+<td align="left">Young, D….</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">Names of the types of fuels corresponding to the classes in the formula. For plotting</td>
+</tr>
+<tr class="even">
+<td align="left">coefToUse</td>
+<td align="left">character</td>
+<td align="left">bestCoef</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">Which coefficient to use to predict? The best coefficient (bestCoef) from DEOPtim or the average (meanCoef)default is bestCoef</td>
+</tr>
+<tr class="odd">
 <td align="left">.useCache</td>
 <td align="left">logical</td>
 <td align="left">FALSE</td>
@@ -557,8 +597,8 @@ Plot(weather, sim$fireSense_SpreadPredicted)</code></pre>
 <h1>Events</h1>
 <p>Events are scheduled as follows:</p>
 <ul>
-<li>Module initiation</li>
-<li>Make predictions</li>
+<li>Module initiation;</li>
+<li>Make predictions.</li>
 </ul>
 <div id="saving" class="section level2">
 <h2>Saving</h2>
@@ -570,6 +610,12 @@ Plot(weather, sim$fireSense_SpreadPredicted)</code></pre>
 <div id="input-data" class="section level2">
 <h2>Input data</h2>
 <table>
+<colgroup>
+<col width="16%"></col>
+<col width="15%"></col>
+<col width="61%"></col>
+<col width="6%"></col>
+</colgroup>
 <thead>
 <tr class="header">
 <th align="left">objectName</th>
@@ -597,6 +643,11 @@ Plot(weather, sim$fireSense_SpreadPredicted)</code></pre>
 <div id="output-data" class="section level2">
 <h2>Output data</h2>
 <table>
+<colgroup>
+<col width="17%"></col>
+<col width="17%"></col>
+<col width="64%"></col>
+</colgroup>
 <thead>
 <tr class="header">
 <th align="left">objectName</th>
@@ -616,7 +667,7 @@ Plot(weather, sim$fireSense_SpreadPredicted)</code></pre>
 </div>
 <div id="links-to-other-modules" class="section level1">
 <h1>Links to other modules</h1>
-<p>Predictions made with this module can be used to feed the fire spread component of landscape fire models (e.g., <code>fireSense</code>).</p>
+<p>Predictions made with this module can be used with the fire spread component of landscape fire models (e.g., <code>fireSense</code>). <!-- TODO --></p>
 </div>
 
 
