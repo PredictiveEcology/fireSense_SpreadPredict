@@ -255,7 +255,7 @@ spreadPredictRun <- function(sim) {
                                                              par1 = P(sim)$lowerSpreadProb))
   }
   
-  if (time(sim) == start(sim)){
+  if (time(sim) == start(sim)) {
     # We want a full distribution of the spread prob for each fuel type for the
     # whole range of MDC
     weatherValues <- sort(unique(mat[colnames(mat) == "weather"]))
@@ -263,10 +263,10 @@ spreadPredictRun <- function(sim) {
     # Spread probability of each fuel type.
     # I need the whole thinned vector repeated the n times the number of params
     # (length(covPars)-1)
-    thinnedExp <- data.table(weather = rep(thinned, times = length(covPars)-1))
-    matExp <- data.table(matrix(rep(as.numeric(Matrix::diag(length(covPars)-1)),
+    thinnedExp <- data.table(weather = rep(thinned, times = length(covPars) - 1))
+    matExp <- data.table(matrix(rep(as.numeric(Matrix::diag(length(covPars) - 1)),
                                     each = length(thinned)),
-                                ncol = length(covPars)-1))
+                                ncol = length(covPars) - 1))
     names(matExp) <- names(covPars)[names(covPars) != "weather"]
     m <- as.matrix(cbind(thinnedExp, matExp))
     # Now in data.table format so I can add spreadProb and
