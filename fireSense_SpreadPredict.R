@@ -5,9 +5,9 @@ defineModule(sim, list(
   description = "Predicts a surface of fire spread probilities using a model fitted with fireSense_SpreadFit.",
   keywords = c("fire spread", "fireSense", "predict"),
   authors = c(
-    person("Jean", "Marchal", email = "jean.d.marchal@gmail.com", role = c("aut", "cre")),
-    person("Eliot", "McIntire", email = "eliot.mcintire@canada.ca", role = "aut"),
-    person("Tati", "Michelleti", email = "tati.micheletti@gmail.com", role = "aut")
+    person("Eliot", "McIntire", email = "eliot.mcintire@canada.ca", role = c("aut", "cre")),
+    person("Tati", "Michelleti", email = "tati.micheletti@gmail.com", role = "aut"),
+    person("Jean", "Marchal", email = "jean.d.marchal@gmail.com", role = "aut")
   ),
   childModules = character(),
   version = list(fireSense_SpreadPredict = "0.0.1", SpaDES.core = "0.1.0"),
@@ -218,9 +218,16 @@ spreadPredictRun <- function(sim) {
   # # Rescale to numerics and /1000
   if (!is.null(sim$covMinMax)) {
     for (cn in colnames(sim$covMinMax)) {
-      set(fireSenseDataDTx1000, NULL, cn,
-          rescaleKnown(x = fireSenseDataDTx1000[[cn]], minNew = 0, maxNew = 1000,
-                       minOrig = sim$covMinMax[[cn]][1], maxOrig = sim$covMinMax[[cn]][2]))
+      if (cn != "weather"){
+        set(fireSenseDataDTx1000, NULL, cn,
+            rescaleKnown(x = fireSenseDataDTx1000[[cn]], minNew = 0, maxNew = 1000,
+                         minOrig = sim$covMinMax[[cn]][1], maxOrig = sim$covMinMax[[cn]][2]))
+      } else {
+        set(fireSenseDataDTx1000, NULL, cn,
+            rescaleKnown(x = fireSenseDataDTx1000[[cn]], minNew = 0, 
+                         maxNew = 1000*(max(fireSenseDataDTx1000[[cn]])/sim$covMinMax[[cn]][2]),
+                         minOrig = sim$covMinMax[[cn]][1], maxOrig = sim$covMinMax[[cn]][2]))
+      }
     }
   } else {
     fireSenseDataDTx1000 <- fireSenseDataDTx1000
@@ -247,7 +254,7 @@ spreadPredictRun <- function(sim) {
     set(fireSenseDataDTx1000, NULL, "spreadProb", logistic2p(mat %*% covPars, logisticPars,
                                                              par1 = P(sim)$lowerSpreadProb))
   }
-
+  
   if (time(sim) == start(sim)){
     # We want a full distribution of the spread prob for each fuel type for the
     # whole range of MDC
@@ -277,14 +284,14 @@ spreadPredictRun <- function(sim) {
       set(sim$spreadProbFuelType, NULL, "spreadProb", logistic2p(m %*% covPars, logisticPars,
                                                                  par1 = P(sim)$lowerSpreadProb))
     }
-
+    
     coef <- ifelse(P(sim)$coefToUse == "bestCoef", "best coefficients", "averaged coefficients")
     sim$spreadProbFuelType <- plotSpreadProbByFuelType(spreadProbFuelType = sim$spreadProbFuelType,
-                                                     typesOfFuel = P(sim)$typesOfFuel,
-                                                     coefToUse = coef,
-                                                     covMinMax = sim$covMinMax)
+                                                       typesOfFuel = P(sim)$typesOfFuel,
+                                                       coefToUse = coef,
+                                                       covMinMax = sim$covMinMax)
   }
-
+  
   # Return to raster format
   sim$fireSense_SpreadPredicted <- raster(sim$flammableRTM)
   sim$fireSense_SpreadPredicted[whNotNA] <- fireSenseDataDTx1000$spreadProb
