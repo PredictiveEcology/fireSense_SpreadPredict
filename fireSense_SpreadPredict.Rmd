@@ -22,10 +22,10 @@ Predicts a surface (raster) of fire spread probabilities using a model previousl
 # Usage
 
 ```{r module-usage-init}
-library(magrittr)
-library(raster)
-library(SpaDES.core)
-library(SpaDES.tools)
+if (!require(Require)) install.packages("Require")
+setLibPaths("~/tmpFireSenseRPackages/") # keep R packages isolated in their own folder
+Require(c("magrittr", "raster", "SpaDES.core", "SpaDES.tools"))
+Require("RandomFields", require = FALSE) 
 
 set.seed(123)
 
