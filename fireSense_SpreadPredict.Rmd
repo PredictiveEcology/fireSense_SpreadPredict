@@ -23,9 +23,11 @@ Predicts a surface (raster) of fire spread probabilities using a model previousl
 
 ```{r module-usage-init}
 if (!require(Require)) install.packages("Require")
-setLibPaths("~/tmpFireSenseRPackages/") # keep R packages isolated in their own folder
+origRPath <- setLibPaths("~/tmpFireSenseRPackages4/")   # keep R packages isolated in their own folder
+Sys.setenv("R_REMOTES_UPGRADE" = "never") # See ?install_github -- Just install whatever is available; don't ask for further updates
+
 Require(c("magrittr", "raster", "SpaDES.core", "SpaDES.tools"))
-Require("RandomFields", require = FALSE) 
+Require("SpaDES.core", dependencies = TRUE) # TRUE her means install Suggests too
 
 set.seed(123)
 
@@ -60,7 +62,7 @@ parameters <- list(
 )
 
 # Objects to pass from the global environment to the simList environment
-objects <- c(
+objects <- list(
   "weather" = weather,
   "fireSense_SpreadFitted" = fireSense_SpreadFitted
 )
