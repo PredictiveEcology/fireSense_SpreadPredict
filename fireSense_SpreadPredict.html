@@ -13,7 +13,7 @@
 <meta name="author" content="Alex M. Chubaty (achubaty@for-cast.ca)" />
 <meta name="author" content="Tati Micheletti (tati.micheletti@gmail.com)" />
 
-<meta name="date" content="2020-09-07" />
+<meta name="date" content="2020-09-08" />
 
 <title>fireSense_SpreadPredict</title>
 
@@ -369,7 +369,7 @@ summary {
 <h4 class="author">Jean Marchal (<a href="mailto:jean.d.marchal@gmail.com" class="email">jean.d.marchal@gmail.com</a>)</h4>
 <h4 class="author">Alex M. Chubaty (<a href="mailto:achubaty@for-cast.ca" class="email">achubaty@for-cast.ca</a>)</h4>
 <h4 class="author">Tati Micheletti (<a href="mailto:tati.micheletti@gmail.com" class="email">tati.micheletti@gmail.com</a>)</h4>
-<h4 class="date">07 September 2020</h4>
+<h4 class="date">08 September 2020</h4>
 
 </div>
 
@@ -409,7 +409,7 @@ Require(c(&quot;magrittr&quot;, &quot;raster&quot;, &quot;SpaDES.core&quot;, &qu
 ## 
 ##     citation</code></pre>
 <pre><code>## Loading required package: SpaDES.tools</code></pre>
-<pre class="r"><code>Require(c(&quot;logging&quot;, &quot;RandomFields&quot;)) # TRUE her means install Suggests too</code></pre>
+<pre class="r"><code>Require(c(&quot;logging&quot;, &quot;RandomFields&quot;)) # These are suggested from SpaDES.core and used</code></pre>
 <pre><code>## Loading required package: logging</code></pre>
 <pre><code>## Loading required package: RandomFields</code></pre>
 <pre><code>## Loading required package: RandomFieldsUtils</code></pre>
@@ -418,9 +418,11 @@ Require(c(&quot;magrittr&quot;, &quot;raster&quot;, &quot;SpaDES.core&quot;, &qu
 <pre><code>## The following object is masked from &#39;package:RandomFieldsUtils&#39;:
 ## 
 ##     RFoptions</code></pre>
-<pre><code>##  SpaDES.core SpaDES.tools     magrittr       raster 
-##         TRUE         TRUE         TRUE         TRUE 
-## RandomFields      logging 
+<pre><code>##        magrittr (&gt;= 1.5) raster        (&gt;= 2.5-8) raster (&gt;=        2.5-8) 
+##                     TRUE                     TRUE                     TRUE 
+##              SpaDES.core             SpaDES.tools 
+##                     TRUE                     TRUE 
+##      logging RandomFields 
 ##         TRUE         TRUE</code></pre>
 </div>
 <div id="usage" class="section level1">
@@ -477,10 +479,10 @@ sim &lt;- simInit(
 ##   )</code></pre>
 <pre><code>## Paths set to:
 ##   options(
-##     rasterTmpDir = &#39;/tmp/Rtmpxq8s2A/raster&#39;
-##     reproducible.cachePath = &#39;/tmp/Rtmpxq8s2A/Require/cache&#39;
-##     spades.inputPath = &#39;/tmp/RtmpBnYKdD/SpaDES/inputs&#39;
-##     spades.outputPath = &#39;/tmp/RtmpBnYKdD/SpaDES/outputs&#39;
+##     rasterTmpDir = &#39;/tmp/RtmpcRjGrA/raster&#39;
+##     reproducible.cachePath = &#39;/tmp/RtmpcRjGrA/Require/cache&#39;
+##     spades.inputPath = &#39;/tmp/Rtmpf1VUaC/SpaDES/inputs&#39;
+##     spades.outputPath = &#39;/tmp/Rtmpf1VUaC/SpaDES/outputs&#39;
 ##     spades.modulePath = &#39;/home/runner/work/fireSense_SpreadPredict&#39;
 ##   )</code></pre>
 <pre><code>## Loading required package: ggplot2</code></pre>
@@ -494,7 +496,7 @@ sim &lt;- simInit(
 <pre><code>## [35mfireSense_SpreadPredict: outputObjects: spreadPredictedProbability is assigned to sim inside doEvent.fireSense_SpreadPredict, but is not declared in metadata outputObjects[39m</code></pre>
 <pre><code>## [35mfireSense_SpreadPredict: outputObjects: spreadProbFuelType, classType, Year1 are assigned to sim inside spreadPredictRun, but are not declared in metadata outputObjects[39m</code></pre>
 <pre><code>## [35mfireSense_SpreadPredict: inputObjects: x, formula, flammableRTM, covMinMax, cn, bestCoef, fireSense_SpreadFitted_year2011, classType, spreadProbFuelType, Year1, spreadPredictedProbability are used from sim inside spreadPredictRun, but are not declared in metadata inputObjects[39m</code></pre>
-<p>Run the model: <!-- TODO: this currently FAILS due to incorrect object class --></p>
+<p>Run the model: <!-- TODO: This doesn't have data, so doesn't run --></p>
 <pre class="r"><code>sim &lt;- spades(sim)
 
 Plot(weather, sim$fireSense_SpreadPredicted)</code></pre>
@@ -688,6 +690,7 @@ Plot(weather, sim$fireSense_SpreadPredicted)</code></pre>
 <div id="links-to-other-modules" class="section level1">
 <h1>Links to other modules</h1>
 <p>Predictions made with this module can be used with the fire spread component of landscape fire models (e.g., <code>fireSense</code>). <!-- TODO --></p>
+<pre class="r"><code>if (exists(&quot;origRPath&quot;)) setLibPaths(origRPath)   </code></pre>
 </div>
 
 
