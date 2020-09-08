@@ -13,7 +13,7 @@
 <meta name="author" content="Alex M. Chubaty (achubaty@for-cast.ca)" />
 <meta name="author" content="Tati Micheletti (tati.micheletti@gmail.com)" />
 
-<meta name="date" content="2020-08-11" />
+<meta name="date" content="2020-09-07" />
 
 <title>fireSense_SpreadPredict</title>
 
@@ -369,7 +369,7 @@ summary {
 <h4 class="author">Jean Marchal (<a href="mailto:jean.d.marchal@gmail.com" class="email">jean.d.marchal@gmail.com</a>)</h4>
 <h4 class="author">Alex M. Chubaty (<a href="mailto:achubaty@for-cast.ca" class="email">achubaty@for-cast.ca</a>)</h4>
 <h4 class="author">Tati Micheletti (<a href="mailto:tati.micheletti@gmail.com" class="email">tati.micheletti@gmail.com</a>)</h4>
-<h4 class="date">11 August 2020</h4>
+<h4 class="date">07 September 2020</h4>
 
 </div>
 
@@ -378,17 +378,26 @@ summary {
 <h1>Overview</h1>
 <p>Predicts a surface (raster) of fire spread probabilities using a model previously fit with <code>fireSense_SpreadFit</code>.</p>
 </div>
-<div id="usage" class="section level1">
-<h1>Usage</h1>
-<pre class="r"><code>library(magrittr)
-library(raster)</code></pre>
+<div id="set-up-r-packages" class="section level1">
+<h1>Set up R packages</h1>
+<pre class="r"><code>if (!require(Require)) { install.packages(&quot;Require&quot;); library(Require) }</code></pre>
+<pre><code>## Loading required package: Require</code></pre>
+<pre class="r"><code># keep R packages isolated in their own folder -- can omit this to use existing packages (may not work correctly)
+# origRPath &lt;- setLibPaths(&quot;tmpFireSenseRPackages/&quot;)   
+
+# See ?install_github -- Just install whatever is available; don&#39;t ask for further updates -- this prevents prompts to update
+Sys.setenv(&quot;R_REMOTES_UPGRADE&quot; = &quot;never&quot;) 
+
+Require(c(&quot;magrittr&quot;, &quot;raster&quot;, &quot;SpaDES.core&quot;, &quot;SpaDES.tools&quot;))</code></pre>
+<pre><code>## Loading required package: magrittr</code></pre>
+<pre><code>## Loading required package: raster</code></pre>
 <pre><code>## Loading required package: sp</code></pre>
 <pre><code>## 
 ## Attaching package: &#39;raster&#39;</code></pre>
 <pre><code>## The following object is masked from &#39;package:magrittr&#39;:
 ## 
 ##     extract</code></pre>
-<pre class="r"><code>library(SpaDES.core)</code></pre>
+<pre><code>## Loading required package: SpaDES.core</code></pre>
 <pre><code>## Loading required package: quickPlot</code></pre>
 <pre><code>## Loading required package: reproducible</code></pre>
 <pre><code>## 
@@ -399,9 +408,24 @@ library(raster)</code></pre>
 <pre><code>## The following object is masked from &#39;package:utils&#39;:
 ## 
 ##     citation</code></pre>
-<pre class="r"><code>library(SpaDES.tools)
-
-set.seed(123)
+<pre><code>## Loading required package: SpaDES.tools</code></pre>
+<pre class="r"><code>Require(c(&quot;logging&quot;, &quot;RandomFields&quot;)) # TRUE her means install Suggests too</code></pre>
+<pre><code>## Loading required package: logging</code></pre>
+<pre><code>## Loading required package: RandomFields</code></pre>
+<pre><code>## Loading required package: RandomFieldsUtils</code></pre>
+<pre><code>## 
+## Attaching package: &#39;RandomFields&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:RandomFieldsUtils&#39;:
+## 
+##     RFoptions</code></pre>
+<pre><code>##  SpaDES.core SpaDES.tools     magrittr       raster 
+##         TRUE         TRUE         TRUE         TRUE 
+## RandomFields      logging 
+##         TRUE         TRUE</code></pre>
+</div>
+<div id="usage" class="section level1">
+<h1>Usage</h1>
+<pre class="r"><code>set.seed(123)
 
 # Define simulation parameters
 times &lt;- list(start = 1, end = 1, timeunit = &quot;year&quot;)
@@ -413,9 +437,9 @@ paths &lt;- list(
 # Create a random map of weather
 nx &lt;- ny &lt;- 100L
 weather &lt;- raster(nrows = ny, ncols = nx, xmn = -nx/2, xmx = nx/2, ymn = -ny/2, ymx = ny/2) %&gt;%
-  gaussMap(scale = 300, var = 1, speedup = 1, inMemory = TRUE)</code></pre>
-<pre><code>## Loading required namespace: RandomFields</code></pre>
-<pre class="r"><code># Create a typical output of fireSense_SpreadFit
+  gaussMap(scale = 300, var = 1, speedup = 1, inMemory = TRUE)
+
+# Create a typical output of fireSense_SpreadFit
 fireSense_SpreadFitted &lt;- list(
   formula = ~ weather2 - 1,
   coef = setNames(c(0.3, 3, 0.1, 1.5, 3),
@@ -434,7 +458,7 @@ parameters &lt;- list(
 )
 
 # Objects to pass from the global environment to the simList environment
-objects &lt;- c(
+objects &lt;- list(
   &quot;weather&quot; = weather,
   &quot;fireSense_SpreadFitted&quot; = fireSense_SpreadFitted
 )
@@ -453,18 +477,14 @@ sim &lt;- simInit(
 ##   )</code></pre>
 <pre><code>## Paths set to:
 ##   options(
-##     rasterTmpDir = &#39;/tmp/RtmpzG3Myg/raster&#39;
-##     reproducible.cachePath = &#39;/tmp/RtmpzG3Myg/Require/cache&#39;
-##     spades.inputPath = &#39;/tmp/RtmplroZAd/SpaDES/inputs&#39;
-##     spades.outputPath = &#39;/tmp/RtmplroZAd/SpaDES/outputs&#39;
+##     rasterTmpDir = &#39;/tmp/Rtmpxq8s2A/raster&#39;
+##     reproducible.cachePath = &#39;/tmp/Rtmpxq8s2A/Require/cache&#39;
+##     spades.inputPath = &#39;/tmp/RtmpBnYKdD/SpaDES/inputs&#39;
+##     spades.outputPath = &#39;/tmp/RtmpBnYKdD/SpaDES/outputs&#39;
 ##     spades.modulePath = &#39;/home/runner/work/fireSense_SpreadPredict&#39;
 ##   )</code></pre>
 <pre><code>## Loading required package: ggplot2</code></pre>
-<pre><code>## Loading required package: Matrix</code></pre>
 <pre><code>## Loading required package: fireSenseUtils</code></pre>
-<pre><code>## Registered S3 method overwritten by &#39;pryr&#39;:
-##   method      from
-##   print.bytes Rcpp</code></pre>
 <pre><code>## Loading required package: viridis</code></pre>
 <pre><code>## Loading required package: viridisLite</code></pre>
 <pre><code>## [35mfireSense_SpreadPredict: module code: fireSense_SpreadFitted, dataFireSense_SpreadPredict are declared in metadata inputObjects, but no default(s) are provided in .inputObjects[39m</code></pre>
