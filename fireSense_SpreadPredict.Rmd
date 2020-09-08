@@ -24,13 +24,13 @@ Predicts a surface (raster) of fire spread probabilities using a model previousl
 ```{r module-usage-init}
 if (!require(Require)) install.packages("Require")
 # keep R packages isolated in their own folder -- can omit this to use existing packages (may not work correctly)
-origRPath <- setLibPaths("tmpFireSenseRPackages/")   
+# origRPath <- setLibPaths("tmpFireSenseRPackages/")   
 
 # See ?install_github -- Just install whatever is available; don't ask for further updates -- this prevents prompts to update
 Sys.setenv("R_REMOTES_UPGRADE" = "never") 
 
 Require(c("magrittr", "raster", "SpaDES.core", "SpaDES.tools"))
-Require(c("logging", "RandomFields")) # TRUE her means install Suggests too
+Require(c("logging", "RandomFields")) # These are suggested from SpaDES.core and used
 
 set.seed(123)
 
@@ -80,7 +80,7 @@ sim <- simInit(
 )
 ```
 
-Run the model: <!-- TODO: this currently FAILS due to incorrect object class -->
+Run the model: <!-- TODO: This doesn't have data, so doesn't run -->
 
 ```{r module-usage-run, eval = FALSE}
 sim <- spades(sim)
@@ -127,3 +127,7 @@ knitr::kable(df_outputs)
 # Links to other modules
 
 Predictions made with this module can be used with the fire spread component of landscape fire models (e.g., `fireSense`). <!-- TODO -->
+
+```{r reset-R-package-library}
+if (exists("origRPath")) setLibPaths(origRPath)   
+```
