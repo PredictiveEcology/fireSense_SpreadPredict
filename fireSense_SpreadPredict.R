@@ -88,6 +88,9 @@ defineModule(sim, list(
       objectClass = "RasterLayer, RasterStack",
       sourceURL = NA_character_,
       desc = "One or more RasterLayers or RasterStacks in which to look for variables present in the model formula."
+    ),
+    exepectsInput(objectName = 'covMinMax', objectClass = 'data.table',
+                  description = 'range used to rescale coefficients during spreadFit')
     )
   ),
   outputObjects = createsOutput(
