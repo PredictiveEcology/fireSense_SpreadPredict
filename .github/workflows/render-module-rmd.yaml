@@ -48,7 +48,6 @@ jobs:
         shell: Rscript {0}
       - name: Install SpaDES
         run: |
-          remotes::install_github("traversc/stringfish")
           remotes::install_github("PredictiveEcology/Require@development")
           remotes::install_github("PredictiveEcology/reproducible@development", dependencies = TRUE)
           remotes::install_github("PredictiveEcology/SpaDES.core@development", dependencies = TRUE)
