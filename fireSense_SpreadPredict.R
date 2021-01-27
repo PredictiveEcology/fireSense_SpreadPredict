@@ -100,7 +100,7 @@ defineModule(sim, list(
     objectClass = "list",
     desc = "List of spread probability rasters."
   )
-)
+))
 
 ## event types
 #   - type `init` is required for initialiazation
