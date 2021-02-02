@@ -77,11 +77,10 @@ defineModule(sim, list(
     )
   ),
   inputObjects = rbind(
-    expectsInput(
-      objectName = "fireSense_SpreadFitted",
-      objectClass = "fireSense_SpreadFit",
-      sourceURL = NA_character_,
-      desc = "An object of class 'fireSense_SpreadFit' created by the fireSense_SpreadFit module."
+    expectsInput(objectName = "covMinMax",
+                 objectClass = "data.table",
+                 sourceURL = NA_character_,
+                 description = "range used to rescale coefficients during spreadFit"
     ),
     expectsInput(
       objectName = "dataFireSense_SpreadPredict",
@@ -89,8 +88,11 @@ defineModule(sim, list(
       sourceURL = NA_character_,
       desc = "One or more RasterLayers or RasterStacks in which to look for variables present in the model formula."
     ),
-    exepectsInput(objectName = 'covMinMax', objectClass = 'data.table',
-                  description = 'range used to rescale coefficients during spreadFit')
+    expectsInput(
+      objectName = "fireSense_SpreadFitted",
+      objectClass = "fireSense_SpreadFit",
+      sourceURL = NA_character_,
+      desc = "An object of class 'fireSense_SpreadFit' created by the fireSense_SpreadFit module."
     )
   ),
   outputObjects = createsOutput(
@@ -225,7 +227,7 @@ spreadPredictRun <- function(sim) {
                          minOrig = sim$covMinMax[[cn]][1], maxOrig = sim$covMinMax[[cn]][2]))
       } else {
         set(fireSenseDataDTx1000, NULL, cn,
-            rescaleKnown(x = fireSenseDataDTx1000[[cn]], minNew = 0, 
+            rescaleKnown(x = fireSenseDataDTx1000[[cn]], minNew = 0,
                          maxNew = 1000*(max(fireSenseDataDTx1000[[cn]])/sim$covMinMax[[cn]][2]),
                          minOrig = sim$covMinMax[[cn]][1], maxOrig = sim$covMinMax[[cn]][2]))
       }
@@ -285,14 +287,14 @@ spreadPredictRun <- function(sim) {
       set(sim$spreadProbFuelType, NULL, "spreadProb", logistic2p(m %*% covPars, logisticPars,
                                                                  par1 = P(sim)$lowerSpreadProb))
     }
-    
+
     coef <- ifelse(P(sim)$coefToUse == "bestCoef", "best coefficients", "averaged coefficients")
     sim$spreadProbFuelType <- plotSpreadProbByFuelType(spreadProbFuelType = sim$spreadProbFuelType,
                                                        typesOfFuel = P(sim)$typesOfFuel,
                                                        coefToUse = coef,
                                                        covMinMax = sim$covMinMax)
   }
-  
+
   # Return to raster format
   sim$fireSense_SpreadPredicted <- raster(sim$flammableRTM)
   sim$fireSense_SpreadPredicted[whNotNA] <- fireSenseDataDTx1000$spreadProb
