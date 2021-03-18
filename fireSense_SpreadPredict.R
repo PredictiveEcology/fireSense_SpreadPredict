@@ -17,94 +17,40 @@ defineModule(sim, list(
   reqdPkgs = list("magrittr", "Matrix", "methods", "raster", "SpaDES.core", "stats",
                   "ggplot2", "viridis",
                   "PredictiveEcology/fireSenseUtils@development"),
-  parameters = rbind(
-    # defineParameter("paramName", "paramClass", default, min, max, "parameter description")),
-    defineParameter(
-      name = "modelObjName", class = "character",
-      default = "fireSense_SpreadFitted",
-      desc = paste("a character vector indicating the name of a model object created with",
-                   "the fireSense_SpreadFit module.")
-    ),
-    defineParameter(
-      name = "data", class = "character",
-      default = "dataFireSense_SpreadPredict",
-      desc = paste("a character vector indicating the names of objects in the simList environment",
-                   "in which to look for variables present in the model formula.",
-                   "`data` objects can be RasterLayers, RasterStacks or RasterBricks.")
-    ),
-    defineParameter(
-      name = "mapping", class = "character, list", default = NULL,
-      desc = paste("optional named vector or list of character strings mapping one or more",
-                   "variables in the model formula to those in data objects.")
-    ),
-    defineParameter(
-      name = ".runInitialTime", class = "numeric", default = start(sim),
-      desc = "when to start this module? By default, the start time of the simulation."
-    ),
-    defineParameter(
-      name = ".runInterval", class = "numeric", default = 1,
-      desc = paste("optional. Interval between two runs of this module, expressed in units of simulation time.",
-                   "By default, 1 year.")
-    ),
-    defineParameter(
-      name = ".saveInitialTime", class = "numeric", default = NA,
-      desc = "optional. When to start saving output to a file."
-    ),
-    defineParameter(
-      name = ".saveInterval", class = "numeric", default = NA,
-      desc = "optional. Interval between save events."
-    ),
-    defineParameter(
-      name = "lowerSpreadProb", class = "numeric", default = 0.13,
-      desc = "Lower spread probability"
-    ),
-    defineParameter(
-      name = "typesOfFuel", class = "character",
-      default = c("Young", "Deciduous", "Conifer", "Jack Pine", "Other"),
-      desc = "Names of the types of fuels corresponding to the classes in the formula. For plotting"
-    ),
-    defineParameter(
-      name = "coefToUse", class = "character",
-      default = "bestCoef", # meanCoef
-      desc = paste0("Which coefficient to use to predict? The best coefficient ",
-                    "(bestCoef) from DEOPtim or the average (meanCoef)",
-                    "default is bestCoef")
-    ),
+  parameters = bindrows(
+    defineParameter(name = ".runInitialTime", class = "numeric", default = start(sim),
+                    desc = "when to start this module? By default, the start time of the simulation."),
+    defineParameter(name = ".runInterval", class = "numeric", default = 1,
+                    desc = paste("optional. Interval between two runs of this module, expressed in units of",
+                                 "simulation time.Defaults to 1 year.")),
+    defineParameter(name = ".saveInitialTime", class = "numeric", default = NA,
+                    desc = "optional. When to start saving output to a file."),
+    defineParameter(name = ".saveInterval", class = "numeric", default = NA,
+                    desc = "optional. Interval between save events."),
+    defineParameter(name = "lowerSpreadProb", class = "numeric", default = 0.13,
+                    desc = "Lower spread probability"),
+    defineParameter(name = "coefToUse", class = "character",default = "bestCoef", # meanCoef
+                    desc = paste0("Which coefficient to use to predict? The best coefficient (bestCoef) from DEOPtim or ",
+                                  "the average (meanCoef). default is bestCoef")),
     defineParameter(".useCache", "logical", FALSE, NA, NA,
                     paste("Should this entire module be run with caching activated?",
-                          "This is generally intended for data-type modules, where stochasticity",
-                          "and time are not relevant")
-    )
+                          "This is generally intended for data-type modules, where stochasticity and time are not relevant"))
   ),
-  inputObjects = rbind(
-    expectsInput(objectName = "covMinMax",
-                 objectClass = "data.table",
-                 sourceURL = NA_character_,
-                 description = "range used to rescale coefficients during spreadFit"
-    ),
-    expectsInput(
-      objectName = "dataFireSense_SpreadPredict",
-      objectClass = "RasterLayer, RasterStack",
-      sourceURL = NA_character_,
-      desc = "One or more RasterLayers or RasterStacks in which to look for variables present in the model formula."
-    ),
-    expectsInput(
-      objectName = "fireSense_SpreadFitted",
-      objectClass = "fireSense_SpreadFit",
-      sourceURL = NA_character_,
-      desc = "An object of class 'fireSense_SpreadFit' created by the fireSense_SpreadFit module."
-    )
+  inputObjects = bindrows(
+    expectsInput(objectName = "covMinMax", objectClass = "data.table",
+                 description = "range used to rescale coefficients during spreadFit"),
+    expectsInput(objectName = "fireSense_SpreadCovariates", objectClass = "data.table",
+                 desc = "data.table of covariates with pixelID column corresponding to flammableRTM index."),
+    expectsInput(objectName = "fireSense_SpreadFitted", objectClass = "fireSense_SpreadFit",
+                 desc = "An object of class 'fireSense_SpreadFit' created by the fireSense_SpreadFit module."),
+    expectsInput(objectName = "flammableRTM", objectClass = "RasterLayer", sourceURL = NA,
+                 desc = "RTM with nonflammable pixels coded as 0 and flammable as 1.")
   ),
-  outputObjects = createsOutput(
-    objectName = "fireSense_SpreadPredicted",
-    objectClass = "RasterLayer, RasterStack",
-    desc = "An object whose class depends on that of the inputs, could be a RasterLayer or a RasterStack."
-  ),
-  outputObjects = createsOutput(
-    objectName = "spreadPredictedProbability",
-    objectClass = "list",
-    desc = "List of spread probability rasters."
-  )
+  outputObjects = bindrows(
+    createsOutput(objectName = "fireSense_SpreadProbRaster", objectClass = "RasterLayer",
+                  desc = "A raster layer of spread probabilities"),
+    createsOutput(objectName = 'spreadPredictedProbability' objectClass = "list",
+                  desc = "list of annual spread probabilities")
 ))
 
 ## event types
@@ -156,43 +102,19 @@ doEvent.fireSense_SpreadPredict <- function(sim, eventTime, eventType, debug = F
 spreadPredictRun <- function(sim) {
   moduleName <- current(sim)$moduleName
 
-  if (!is(sim[[P(sim)$modelObjName]], "fireSense_SpreadFit")) {
-    stop(moduleName, "> '", P(sim)$modelObjName, "' should be of class 'fireSense_SpreadFit")
+  if (!is(sim$fireSense_SpreadFitted, "fireSense_SpreadFit")) {
+    stop(moduleName, "> '", sim$fireSense_spreadFitted, "' should be of class 'fireSense_SpreadFit")
   }
 
   # Load inputs in the data container
   # list2env(as.list(envir(sim)), envir = mod)
 
-  mod_env <- new.env()
-  for (x in P(sim)$data) {
-    if (!is.null(sim[[x]])) {
-      if (is(sim[[x]], "RasterStack") || is(sim[[x]], "RasterBrick")) {
-        list2env(setNames(unstack(sim[[x]]), names(sim[[x]])), envir = mod_env)
-      }
-      else if (is(sim[[x]], "RasterLayer")) {
-        mod_env[[x]] <- sim[[x]]
-      }
-      else {
-        stop(moduleName, "> '", x, "' is not a RasterLayer, a RasterStack or a RasterBrick.")
-      }
-    }
-  }
+  mod_env <- new.env(parent = glo)
+  list2env(fireSense_SpreadCovariates, env = mod_env)
   ## In case there is a response in the formula remove it
-  terms <- sim[[P(sim)$modelObjName]]$formula %>%
+  terms <- sim$fireSense_SpreadFitted$formula %>%
     terms.formula() %>%
     delete.response()
-
-  ## Mapping variables names to data
-  if (!is.null(P(sim)$mapping)) {
-    for (i in 1:length(P(sim)$mapping))
-    {
-      attr(terms, "term.labels") %<>% gsub(
-        pattern = names(P(sim)$mapping[i]),
-        replacement = P(sim)$mapping[[i]],
-        x = .
-      )
-    }
-  }
 
   formula <- reformulate(attr(terms, "term.labels"), intercept = attr(terms, "intercept"))
   allxy <- all.vars(formula)
@@ -211,8 +133,8 @@ spreadPredictRun <- function(sim) {
   ###################################################
   # First for stacks that are "annual"
   whNotNA <- which(!is.na(sim$flammableRTM[]))
-  hash <- fastdigest(sim$dataFireSense_SpreadPredict)
-  fireSenseDataDTx1000  <- annualStackToDTx1000(annualStack = sim$dataFireSense_SpreadPredict,
+  hash <- fastdigest(sim$fireSense_SpreadCovariates)
+  fireSenseDataDTx1000  <- annualStackToDTx1000(annualStack = sim$fireSense_SpreadCovariates,
                                 whNotNA = whNotNA,
                                 .fastHash = hash,
                                 timeSim = paste0("year", time(sim)),
@@ -235,7 +157,7 @@ spreadPredictRun <- function(sim) {
   } else {
     fireSenseDataDTx1000 <- fireSenseDataDTx1000
   }
-  colsToUse <- names(sim$dataFireSense_SpreadPredict)
+  colsToUse <- setdiff(names(sim$fireSense_SpreadCovariates), 'pixelID')
   parsModel <- length(colsToUse)
 
   par <- sim$fireSense_SpreadFitted_year2011[[P(sim)$coefToUse]]
@@ -289,8 +211,10 @@ spreadPredictRun <- function(sim) {
     }
 
     coef <- ifelse(P(sim)$coefToUse == "bestCoef", "best coefficients", "averaged coefficients")
+    fuelTypes <- setdiff(names(sim$fireSense_ignitionCovariates), c("pixelID")) #maybe others?
+
     sim$spreadProbFuelType <- plotSpreadProbByFuelType(spreadProbFuelType = sim$spreadProbFuelType,
-                                                       typesOfFuel = P(sim)$typesOfFuel,
+                                                       typesOfFuel = fuelTypes,
                                                        coefToUse = coef,
                                                        covMinMax = sim$covMinMax)
   }
