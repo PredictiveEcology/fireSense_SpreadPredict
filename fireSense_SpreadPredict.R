@@ -38,7 +38,7 @@ defineModule(sim, list(
   ),
   inputObjects = bindrows(
     expectsInput(objectName = "covMinMax", objectClass = "data.table",
-                 description = "range used to rescale coefficients during spreadFit"),
+                 desc = "range used to rescale coefficients during spreadFit"),
     expectsInput(objectName = "fireSense_SpreadCovariates", objectClass = "data.table",
                  desc = "data.table of covariates with pixelID column corresponding to flammableRTM index."),
     expectsInput(objectName = "fireSense_SpreadFitted", objectClass = "fireSense_SpreadFit",
@@ -51,8 +51,8 @@ defineModule(sim, list(
                   desc = "A raster layer of spread probabilities"),
     createsOutput(objectName = 'spreadPredictedProbability', objectClass = "list",
                   desc = "list of annual spread probabilities")
-))
-
+  ))
+)
 ## event types
 #   - type `init` is required for initialiazation
 
@@ -109,7 +109,7 @@ spreadPredictRun <- function(sim) {
   # Load inputs in the data container
   # list2env(as.list(envir(sim)), envir = mod)
 
-  mod_env <- new.env(parent = glo)
+  mod_env <- new.env(parent = globalenv())
   list2env(fireSense_SpreadCovariates, env = mod_env)
   ## In case there is a response in the formula remove it
   terms <- sim$fireSense_SpreadFitted$formula %>%
