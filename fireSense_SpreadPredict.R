@@ -49,7 +49,7 @@ defineModule(sim, list(
   outputObjects = bindrows(
     createsOutput(objectName = "fireSense_SpreadProbRaster", objectClass = "RasterLayer",
                   desc = "A raster layer of spread probabilities"),
-    createsOutput(objectName = 'spreadPredictedProbability' objectClass = "list",
+    createsOutput(objectName = 'spreadPredictedProbability', objectClass = "list",
                   desc = "list of annual spread probabilities")
 ))
 
