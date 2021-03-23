@@ -147,12 +147,11 @@ spreadPredictRun <- function(sim) {
   #                               omitArgs = c("annualStack",
   #                                     "rasterToMatch"))
   # # Rescale to numerics and /1000
-
   if (!is.null(sim$covMinMax)) {
     for (cn in names(sim$covMinMax)) {
       set(
         fireSense_SpreadCovariates, NULL, cn,
-        rescaleKnown(x = fireSense_SpreadCovariates[[cn]],
+        rescaleKnown2(x = fireSense_SpreadCovariates[[cn]],
                       minNew = 0,
                       maxNew = 1000,
                       minOrig = sim$covMinMax[[cn]][1],
