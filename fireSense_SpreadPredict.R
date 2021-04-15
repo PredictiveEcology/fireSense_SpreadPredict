@@ -43,7 +43,7 @@ defineModule(sim, list(
                           "This is generally intended for data-type modules, where stochasticity and time are not relevant"))
   ),
   inputObjects = bindrows(
-    expectsInput(objectName = "covMinMax", objectClass = "data.table",
+    expectsInput(objectName = "covMinMax_spread", objectClass = "data.table",
                  desc = "range used to rescale coefficients during spreadFit"),
     expectsInput(objectName = "fireSense_SpreadCovariates", objectClass = "data.table",
                  desc = "data.table of covariates with pixelID column corresponding to flammableRTM index."),
@@ -147,15 +147,15 @@ spreadPredictRun <- function(sim) {
   #                               omitArgs = c("annualStack",
   #                                     "rasterToMatch"))
   # # Rescale to numerics and /1000
-  if (!is.null(sim$covMinMax)) {
-    for (cn in names(sim$covMinMax)) {
+  if (!is.null(sim$covMinMax_spread)) {
+    for (cn in names(sim$covMinMax_spread)) {
       set(
         fireSense_SpreadCovariates, NULL, cn,
         rescaleKnown2(x = fireSense_SpreadCovariates[[cn]],
                       minNew = 0,
                       maxNew = 1000,
-                      minOrig = sim$covMinMax[[cn]][1],
-                      maxOrig = sim$covMinMax[[cn]][2])
+                      minOrig = sim$covMinMax_spread[[cn]][1],
+                      maxOrig = sim$covMinMax_spread[[cn]][2])
       )
     }
   }
@@ -165,17 +165,17 @@ spreadPredictRun <- function(sim) {
   }
 
 
-  # if (!is.null(sim$covMinMax)) {
-  #   for (cn in colnames(sim$covMinMax)) {
+  # if (!is.null(sim$covMinMax_spread)) {
+  #   for (cn in colnames(sim$covMinMax_spread)) {
   #     if (cn != "weather"){
   #       set(fireSenseDataDTx1000, NULL, cn,
   #           rescaleKnown(x = fireSenseDataDTx1000[[cn]], minNew = 0, maxNew = 1000,
-  #                        minOrig = sim$covMinMax[[cn]][1], maxOrig = sim$covMinMax[[cn]][2]))
+  #                        minOrig = sim$covMinMax_spread[[cn]][1], maxOrig = sim$covMinMax_spread[[cn]][2]))
   #     } else {
   #       set(fireSenseDataDTx1000, NULL, cn,
   #           rescaleKnown(x = fireSenseDataDTx1000[[cn]], minNew = 0,
-  #                        maxNew = 1000*(max(fireSenseDataDTx1000[[cn]])/sim$covMinMax[[cn]][2]),
-  #                        minOrig = sim$covMinMax[[cn]][1], maxOrig = sim$covMinMax[[cn]][2]))
+  #                        maxNew = 1000*(max(fireSenseDataDTx1000[[cn]])/sim$covMinMax_spread[[cn]][2]),
+  #                        minOrig = sim$covMinMax_spread[[cn]][1], maxOrig = sim$covMinMax_spread[[cn]][2]))
   #     }
   #   }
   # } else {
@@ -242,7 +242,7 @@ spreadPredictRun <- function(sim) {
   #   sim$spreadProbFuelType <- plotSpreadProbByFuelType(spreadProbFuelType = sim$spreadProbFuelType,
   #                                                      typesOfFuel = fuelTypes,
   #                                                      coefToUse = coef,
-  #                                                      covMinMax = sim$covMinMax)
+  #                                                      covMinMax = sim$covMinMax_spread)
   # }
 
   # Return to raster format
