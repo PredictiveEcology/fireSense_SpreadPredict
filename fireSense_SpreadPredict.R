@@ -53,7 +53,7 @@ defineModule(sim, list(
                  desc = "RTM with nonflammable pixels coded as 0 and flammable as 1.")
   ),
   outputObjects = bindrows(
-    createsOutput(objectName = "fireSense_SpreadProbRaster", objectClass = "RasterLayer",
+    createsOutput(objectName = "fireSense_SpreadPredicted", objectClass = "RasterLayer",
                   desc = "A raster layer of spread probabilities")
   ))
 )
