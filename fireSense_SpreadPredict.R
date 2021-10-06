@@ -66,7 +66,6 @@ doEvent.fireSense_SpreadPredict <- function(sim, eventTime, eventType, debug = F
   switch(
     eventType,
     init = {
-
       sim$spreadPredictedProbability <- list()
 
       sim <- scheduleEvent(sim, eventTime = P(sim)$.runInitialTime, moduleName, "run",
@@ -164,7 +163,6 @@ spreadPredictRun <- function(sim) {
                                              mutuallyExclusiveCols = P(sim)$mutuallyExclusiveCols)
   }
 
-
   # if (!is.null(sim$covMinMax_spread)) {
   #   for (cn in colnames(sim$covMinMax_spread)) {
   #     if (cn != "weather"){
@@ -198,13 +196,13 @@ spreadPredictRun <- function(sim) {
     set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic4p(mat %*% covPars, logisticPars))
   } else if (length(logisticPars) == 3) {
     set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic3p(mat %*% covPars, logisticPars,
-                                                             par1 = P(sim)$lowerSpreadProb))
+                                                                   par1 = P(sim)$lowerSpreadProb))
   } else if (length(logisticPars) == 2) {
     set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic2p(mat %*% covPars, logisticPars,
-                                                             par1 = P(sim)$lowerSpreadProb))
+                                                                   par1 = P(sim)$lowerSpreadProb))
   }
 
-  #Note: this code chunk does not work with the covariates that arent' discrete classes
+  ## Note: this code chunk does not work with the covariates that aren't discrete classes
   # browser()
   # if (time(sim) == start(sim)) {
   #   # We want a full distribution of the spread prob for each fuel type for the
