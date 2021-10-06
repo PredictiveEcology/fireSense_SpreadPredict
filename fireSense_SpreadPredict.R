@@ -29,9 +29,10 @@ defineModule(sim, list(
                     desc = "optional. Interval between save events."),
     defineParameter(name = "climCol", class = "character", default = "MDC", min = NA, max = NA,
                     desc = "the name of the climate covariate in sim$fireSense_spreadCovariates"),
-    defineParameter(name = "coefToUse", class = "character", default = "bestCoef", # meanCoef
-                    desc = paste0("Which coefficient to use to predict? The best coefficient (bestCoef) from DEOPtim or ",
-                                  "the average (meanCoef). default is bestCoef")),
+    defineParameter(name = "coefToUse", class = "character", default = "meanCoef",
+                    desc = paste("Which coefficient to use to predict?",
+                                 "The best coefficient (bestCoef) from DEOPtim or ",
+                                 "the average (meanCoef; default).")),
     defineParameter(name = "lowerSpreadProb", class = "numeric", default = 0.13,
                     desc = "Lower spread probability"),
     defineParameter(name = "mutuallyExclusiveCols", "list", default = list("youngAge" = "vegPC"), NA, NA,
