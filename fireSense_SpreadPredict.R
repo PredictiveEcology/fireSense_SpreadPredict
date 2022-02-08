@@ -106,9 +106,9 @@ doEvent.fireSense_SpreadPredict <- function(sim, eventTime, eventType, debug = F
 #   - keep event functions short and clean, modularize by calling subroutines from section below.
 
 spreadPredictRun <- function(sim) {
-
   moduleName <- current(sim)$moduleName
-  fireSense_SpreadCovariates <- copy(sim$fireSense_SpreadCovariates) #for safety, for now
+
+  fireSense_SpreadCovariates <- copy(sim$fireSense_SpreadCovariates)
 
   if (!is(sim$fireSense_SpreadFitted, "fireSense_SpreadFit")) {
     stop(moduleName, "> '", sim$fireSense_spreadFitted, "' should be of class 'fireSense_SpreadFit")
@@ -159,9 +159,12 @@ spreadPredictRun <- function(sim) {
       )
     }
   }
+
   if (!is.null(P(sim)$mutuallyExclusiveCols)) {
-    fireSense_SpreadCovariates <- makeMutuallyExclusive(dt = fireSense_SpreadCovariates,
-                                             mutuallyExclusiveCols = P(sim)$mutuallyExclusiveCols)
+    fireSense_SpreadCovariates <- makeMutuallyExclusive(
+      dt = fireSense_SpreadCovariates,
+      mutuallyExclusiveCols = P(sim)$mutuallyExclusiveCols
+    )
   }
 
   # if (!is.null(sim$covMinMax_spread)) {
@@ -181,7 +184,7 @@ spreadPredictRun <- function(sim) {
   #   fireSenseDataDTx1000 <- fireSenseDataDTx1000
   # }
 
-  colsToUse <- setdiff(names(fireSense_SpreadCovariates), 'pixelID')
+  colsToUse <- setdiff(names(fireSense_SpreadCovariates), "pixelID")
   parsModel <- length(colsToUse)
   #this is hardcoded and we need to change it.
   par <- sim$fireSense_SpreadFitted[[P(sim)$coefToUse]]
@@ -245,8 +248,8 @@ spreadPredictRun <- function(sim) {
   # }
 
   # Return to raster format
-  sim$fireSense_SpreadPredicted <- raster(sim$flammableRTM)
-  #Need to track what is happening with missing pixels
+  sim$fireSense_SpreadPredicted <- raster(sim$flammableRTM) ## use flammableRTM as template
+  ## Need to track what is happening with missing pixels
   if (FALSE) {
     nFlam <- sum(getValues(sim$flammableRTM), na.rm = TRUE)
     nLand <- nrow(sim$landcoverDT)
