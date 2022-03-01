@@ -13,7 +13,7 @@
 <meta name="author" content="Alex M. Chubaty (achubaty@for-cast.ca)" />
 <meta name="author" content="Tati Micheletti (tati.micheletti@gmail.com)" />
 
-<meta name="date" content="2022-02-08" />
+<meta name="date" content="2022-03-01" />
 
 <title>fireSense_SpreadPredict</title>
 
@@ -352,7 +352,7 @@ pre code {
 <h4 class="author">Jean Marchal (<a href="mailto:jean.d.marchal@gmail.com" class="email">jean.d.marchal@gmail.com</a>)</h4>
 <h4 class="author">Alex M. Chubaty (<a href="mailto:achubaty@for-cast.ca" class="email">achubaty@for-cast.ca</a>)</h4>
 <h4 class="author">Tati Micheletti (<a href="mailto:tati.micheletti@gmail.com" class="email">tati.micheletti@gmail.com</a>)</h4>
-<h4 class="date">08 February 2022</h4>
+<h4 class="date">01 March 2022</h4>
 
 </div>
 
@@ -392,10 +392,10 @@ Require(c(&quot;magrittr&quot;, &quot;raster&quot;, &quot;SpaDES.core&quot;, &qu
 <pre><code>##  -- Installing logging -- (1 of 3. Estimated time left: ...; est. finish: ...calculating)</code></pre>
 <pre><code>## Installing package into &#39;/home/runner/work/_temp/Library/4.1&#39;
 ## (as &#39;lib&#39; is unspecified)</code></pre>
-<pre><code>##  -- Installing RandomFieldsUtils -- (2 of 3. Estimated time left: 19 secs; est. finish: 2022-02-08 20:11:53)</code></pre>
+<pre><code>##  -- Installing RandomFieldsUtils -- (2 of 3. Estimated time left: 20 secs; est. finish: 2022-03-01 20:59:44)</code></pre>
 <pre><code>## Installing package into &#39;/home/runner/work/_temp/Library/4.1&#39;
 ## (as &#39;lib&#39; is unspecified)</code></pre>
-<pre><code>##  -- Installing RandomFields -- (3 of 3. Estimated time left: 13 secs; est. finish: 2022-02-08 20:12:06)</code></pre>
+<pre><code>##  -- Installing RandomFields -- (3 of 3. Estimated time left: 13 secs; est. finish: 2022-03-01 20:59:57)</code></pre>
 <pre><code>## Installing package into &#39;/home/runner/work/_temp/Library/4.1&#39;
 ## (as &#39;lib&#39; is unspecified)</code></pre>
 <pre><code>## Loading required package: logging</code></pre>
@@ -474,28 +474,16 @@ sim &lt;- simInit(
 ##   )</code></pre>
 <pre><code>## Paths set to:
 ##   options(
-##     rasterTmpDir = &#39;/tmp/RtmpO3fGhh/raster&#39;
-##     reproducible.cachePath = &#39;/tmp/RtmpO3fGhh/Require/cache&#39;
+##     rasterTmpDir = &#39;/tmp/RtmpBvMhMw/raster&#39;
+##     reproducible.cachePath = &#39;/tmp/RtmpBvMhMw/Require/cache&#39;
 ##     spades.inputPath = &#39;/tmp/Rtmp9t4Xna/SpaDES/inputs&#39;
 ##     spades.outputPath = &#39;/tmp/Rtmp9t4Xna/SpaDES/outputs&#39;
 ##     spades.modulePath = &#39;/home/runner/work/fireSense_SpreadPredict&#39;
 ##   )</code></pre>
-<pre><code>## Installing: fireSenseUtils</code></pre>
-<pre><code>##  -- Installing fireSenseUtils -- (1 of 1. Estimated time left: ...; est. finish: ...calculating)</code></pre>
-<pre><code>## Using github PAT from envvar GITHUB_PAT</code></pre>
-<pre><code>## Downloading GitHub repo PredictiveEcology/fireSenseUtils@development</code></pre>
-<pre><code>## Running `R CMD build`...</code></pre>
-<pre><code>## Installing package into &#39;/home/runner/work/_temp/Library/4.1&#39;
-## (as &#39;lib&#39; is unspecified)</code></pre>
-<pre><code>## Warning in install_githubV(gitPkgNames, install_githubArgs =
-## install_githubArgs, : list(message = &quot;installation of package &#39;/tmp/RtmpO3fGhh/
-## file56be6996a779/fireSenseUtils_0.0.5.9012.tar.gz&#39; had non-zero exit status&quot;,
-## call = i.p(...))</code></pre>
 <pre><code>## Loading required package: ggplot2</code></pre>
 <pre><code>## Loading required package: Matrix</code></pre>
 <pre><code>## Loading required package: fireSenseUtils</code></pre>
-<pre><code>## Warning in library(package, lib.loc = lib.loc, character.only = TRUE,
-## logical.return = TRUE, : there is no package called &#39;fireSenseUtils&#39;</code></pre>
+<pre><code>## Using fireSenseUtils version 0.0.5.9019</code></pre>
 <pre><code>## Loading required package: viridis</code></pre>
 <pre><code>## Loading required package: viridisLite</code></pre>
 <pre><code>## defineParameter: &#39;mutuallyExclusiveCols&#39; is not of specified type &#39;list&#39;.</code></pre>
@@ -505,18 +493,8 @@ sim &lt;- simInit(
 <pre><code>## fireSense_SpreadPredict: module code: spreadPredictRun: local variable &#39;nIg&#39; assigned but may not be used</code></pre>
 <pre><code>## fireSense_SpreadPredict: module code: spreadPredictRun: local variable &#39;nLand&#39; assigned but may not be used</code></pre>
 <pre><code>## fireSense_SpreadPredict: module code: spreadPredictRun: local variable &#39;nSpread&#39; assigned but may not be used</code></pre>
-<pre><code>## fireSense_SpreadPredict: outputObjects: spreadPredictedProbability is assigned to sim inside doEvent.fireSense_SpreadPredict, but is not declared in metadata outputObjects</code></pre>
 <pre><code>## fireSense_SpreadPredict: inputObjects: fireSense_spreadFitted, formula, cn, meanCoef, landcoverDT, fireSense_IgnitionAndEscapeCovariates are used from sim inside spreadPredictRun, but are not declared in metadata inputObjects</code></pre>
-<pre><code>## Feb08 20:12:49 simInit:       Parameter mapping is not used in module fireSense_SpreadPredict</code></pre>
-<pre><code>## * checking for file ‘/tmp/RtmpO3fGhh/remotes56be5c5865ca/PredictiveEcology-fireSenseUtils-273eebc/DESCRIPTION’ ... OK
-## * preparing ‘fireSenseUtils’:
-## * checking DESCRIPTION meta-information ... OK
-## * checking for LF line-endings in source and make files and shell scripts
-## * checking for empty or unneeded directories
-## Removed empty directory ‘fireSenseUtils/docs’
-## Removed empty directory ‘fireSenseUtils/man-roxygen’
-## Omitted ‘LazyData’ from DESCRIPTION
-## * building ‘fireSenseUtils_0.0.5.9012.tar.gz’</code></pre>
+<pre><code>## Mar01 21:00:14 simInit:       Parameter mapping is not used in module fireSense_SpreadPredict</code></pre>
 <p>Run the model: <!-- TODO: This doesn't have data, so doesn't run --></p>
 <pre class="r"><code>sim &lt;- spades(sim)
 
