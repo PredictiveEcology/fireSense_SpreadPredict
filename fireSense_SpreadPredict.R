@@ -67,7 +67,6 @@ doEvent.fireSense_SpreadPredict <- function(sim, eventTime, eventType, debug = F
   switch(
     eventType,
     init = {
-      sim$spreadPredictedProbability <- list()
 
       sim <- scheduleEvent(sim, eventTime = P(sim)$.runInitialTime, moduleName, "run",
                            eventPriority = 5.12)
