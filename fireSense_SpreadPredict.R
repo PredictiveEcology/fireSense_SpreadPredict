@@ -3,7 +3,7 @@ defineModule(sim, list(
   description = "Predicts a surface of fire spread probilities using a model fitted with fireSense_SpreadFit.",
   keywords = c("fire spread", "fireSense", "predict"),
   authors = c(
-    person("Eliot", "McIntire", email = "eliot.mcintire@canada.ca", role = c("aut", "cre")),
+    person("Eliot", "McIntire", email = "eliot.mcintire@nrcan-rncan.gc.ca", role = c("aut", "cre")),
     person("Tati", "Michelleti", email = "tati.micheletti@gmail.com", role = "aut"),
     person("Jean", "Marchal", email = "jean.d.marchal@gmail.com", role = "aut")
   ),
