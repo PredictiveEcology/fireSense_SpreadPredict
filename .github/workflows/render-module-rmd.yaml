@@ -56,7 +56,7 @@ jobs:
 
       - name: Install module package and other dependencies
         run: |
-          pkgs <- SpaDES.core::packages(modules = "[[name]]", paths = "..")[[1]]
+          pkgs <- SpaDES.core::packages(modules = "fireSense_SpreadPredict", paths = "..")[[1]]
           Require::Require(pkgs[[1]])
         shell: Rscript {0}
 
