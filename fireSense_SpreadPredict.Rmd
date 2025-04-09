@@ -1,138 +1,107 @@
 ---
-title: "fireSense_SpreadPredict"
-author:
-  - "Jean Marchal (<jean.d.marchal@gmail.com>)"
-  - "Alex M. Chubaty (<achubaty@for-cast.ca>)"
-  - "Tati Micheletti (<tati.micheletti@gmail.com>)"
-date: "`r format(Sys.time(), '%d %B %Y')`"
+title: "fireSense_SpreadPredict Manual"
+subtitle: "v.`r SpaDES.core::moduleMetadata(module = 'fireSense_SpreadPredict', path = '..')$version`"
+date: "Last updated: `r Sys.Date()`"
 output:
-  html_document: default
-editor_options: 
+  bookdown::html_document2:
+    toc: true
+    toc_float: true
+    theme: sandstone
+    number_sections: false
+    df_print: paged
+    keep_md: yes
+editor_options:
   chunk_output_type: console
+bibliography: citations/references_fireSense_SpreadPredict.bib
+link-citations: true
+always_allow_html: true
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, results = "hold")
+# fireSense_SpreadPredict Module
+
+<!-- the following are text references used in captions for LaTeX compatibility -->
+(ref:fireSense-SpreadPredict) *fireSense_SpreadPredict*
+
+```{r setup-fireSense-SpreadPredict, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE, results = "hold") ## change to eval = TRUE if all chunks are to be evaluated
+
+dir.create("figures", showWarnings = FALSE)
+
+download.file(url = "https://img.shields.io/badge/Made%20with-Markdown-1f425f.png",
+              destfile = "figures/markdownBadge.png",
+              mode = "wb")
 ```
 
-# Overview
+[![made-with-Markdown](figures/markdownBadge.png)](https://commonmark.org)
+
+<!-- if knitting to pdf remember to add the pandoc_args: ["--extract-media", "."] option to yml in order to get the badge images -->
+
+#### Authors:
+
+`r paste(as.character(SpaDES.core::moduleMetadata(module = "fireSense_SpreadPredict", path = '..')$authors), sep = ', ')`
+<!-- ideally separate authors with new lines, '\n' not working -->
+
+## Module Overview
+
+### Module summary
 
 Predicts a surface (raster) of fire spread probabilities using a model previously fit with `fireSense_SpreadFit`.
+fireSense [@Marchal:2017a; @Marchal:2017b; @Marchal:2019] <!-- TODO -->
 
-# Set up R packages
+### Module inputs and parameters
 
-```{r packages}
-if (!require(Require)) { install.packages("Require"); library(Require) }
+Describe input data required by the module and how to obtain it (e.g., directly from online sources or supplied by other modules)
+If `sourceURL` is specified, `downloadData("fireSense_SpreadPredict", "..")` may be sufficient.
 
-# keep R packages isolated in their own folder -- can omit this to use existing packages (may not work correctly)
-# origRPath <- setLibPaths("tmpFireSenseRPackages/")   
+Table \@ref(tab:moduleInputs-fireSense-SpreadPredict) shows the full list of module inputs.
 
-# See ?install_github -- Just install whatever is available; don't ask for further updates -- this prevents prompts to update
-Sys.setenv("R_REMOTES_UPGRADE" = "never") 
-
-Require(c("magrittr", "raster", "SpaDES.core", "SpaDES.tools"))
-Require(c("logging", "RandomFields")) # These are suggested from SpaDES.core and used
+```{r moduleInputs-fireSense-SpreadPredict, echo = FALSE, eval = TRUE, message = FALSE, warning = FALSE}
+df_inputs <- SpaDES.core::moduleInputs("fireSense_SpreadPredict", "..")
+knitr::kable(df_inputs,
+             caption = "List of (ref:fireSense-SpreadPredict) input objects and their description.") |>
+  kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
 ```
 
-# Usage
+Summary of user-visible parameters (Table \@ref(tab:moduleParams-fireSense-SpreadPredict))
 
-```{r module-usage-init}
-set.seed(123)
 
-# Define simulation parameters
-times <- list(start = 1, end = 1, timeunit = "year")
-modules <- list("fireSense_SpreadPredict")
-paths <- list(
-  modulePath = ".."
-)
-
-# Create a random map of weather
-nx <- ny <- 100L
-weather <- raster(nrows = ny, ncols = nx, xmn = -nx/2, xmx = nx/2, ymn = -ny/2, ymx = ny/2) %>%
-  gaussMap(scale = 300, var = 1, speedup = 1, inMemory = TRUE)
-
-# Create a typical output of fireSense_SpreadFit
-fireSense_SpreadFitted <- list(
-  formula = ~ weather2 - 1,
-  coef = setNames(c(0.3, 3, 0.1, 1.5, 3),
-                  c("A", "B", "D", "G", "weather"))
-  ## A, B, D, G are parameters of the 5-parameters logistic function
-)
-class(fireSense_SpreadFitted) <- "fireSense_SpreadFit"
-
-parameters <- list(
-  fireSense_SpreadPredict = list(
-    mapping = list(weather2 = "weather") # One can use mapping to map variables
-                                         # in the formula of the fitted object
-                                         # to those in data. Here weather2
-                                         # (formula) is mapped to weather (data).
-  )
-)
-
-# Objects to pass from the global environment to the simList environment
-objects <- list(
-  "weather" = weather,
-  "fireSense_SpreadFitted" = fireSense_SpreadFitted
-)
-
-# Create the simList
-sim <- simInit(
-  times = times,
-  modules = modules,
-  paths = paths,
-  params = parameters,
-  objects = objects
-)
+```{r moduleParams-fireSense-SpreadPredict, echo = FALSE, eval = TRUE, message = FALSE, warning = FALSE}
+df_params <- SpaDES.core::moduleParams("fireSense_SpreadPredict", "..")
+knitr::kable(df_params, caption = "List of (ref:fireSense-SpreadPredict) parameters and their description.") |>
+  kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
 ```
 
-Run the model: <!-- TODO: This doesn't have data, so doesn't run -->
-
-```{r module-usage-run, eval = FALSE}
-sim <- spades(sim)
-
-Plot(weather, sim$fireSense_SpreadPredicted)
-```
-
-# Parameters
-
-Provide a summary of user-visible parameters.
-
-```{r moduleParams, echo = FALSE}
-df_params <- moduleParams("fireSense_SpreadPredict", "..")
-knitr::kable(df_params)
-```
-
-# Events
-
-Events are scheduled as follows:
-
+### Events
+<!-- TODO -->
 - Module initiation;
 - Make predictions.
 
-## Saving
+### Plotting
+
+Write what is plotted. <!-- TODO -->
+
+### Saving
 
 There is currently nothing saved, but this may change in the future. <!-- TODO -->
 
-# Data dependencies
+### Module outputs
 
-## Input data
+Description of the module outputs (Table \@ref(tab:moduleOutputs-fireSense-SpreadPredict)).
 
-```{r moduleInputs, echo = FALSE}
-df_inputs <- moduleInputs("fireSense_SpreadPredict", "..")
-knitr::kable(df_inputs)
-```
-
-## Output data
-
-```{r moduleOutputs, echo = FALSE}
-df_outputs <- moduleOutputs("fireSense_SpreadPredict", "..")
-knitr::kable(df_outputs)
+```{r moduleOutputs-fireSense-SpreadPredict, echo = FALSE, eval = TRUE, message = FALSE, warning = FALSE}
+df_outputs <- SpaDES.core::moduleOutputs("fireSense_SpreadPredict", "..")
+knitr::kable(df_outputs, caption = "List of (ref:fireSense-SpreadPredict) outputs and their description.") |>
+  kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
 ```
 
 # Links to other modules
 
 Predictions made with this module can be used with the fire spread component of landscape fire models (e.g., `fireSense`). <!-- TODO -->
 
-```{r reset-R-package-library}
-if (exists("origRPath")) setLibPaths(origRPath)   
-```
+### Getting help
+
+- <https://github.com/PredictiveEcology/fireSense_SpreadPredict/issues>
+
+## References
+
+<!-- autogenerated from bibligraphy -->
