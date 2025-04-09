@@ -94,7 +94,7 @@ knitr::kable(df_outputs, caption = "List of (ref:fireSense-SpreadPredict) output
   kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
 ```
 
-# Links to other modules
+### Links to other modules
 
 Predictions made with this module can be used with the fire spread component of landscape fire models (e.g., `fireSense`). <!-- TODO -->
 
