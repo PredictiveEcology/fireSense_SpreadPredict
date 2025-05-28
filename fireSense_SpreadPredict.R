@@ -92,8 +92,8 @@ doEvent.fireSense_SpreadPredict <- function(sim, eventTime, eventType, debug = F
       }
     },
     warning(paste("Undefined event type: '", current(sim)[1, "eventType", with = FALSE],
-      "' in module '", current(sim)[1, "moduleName", with = FALSE], "'",
-      sep = ""
+                  "' in module '", current(sim)[1, "moduleName", with = FALSE], "'",
+                  sep = ""
     ))
   )
 
