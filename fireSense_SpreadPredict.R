@@ -110,89 +110,177 @@ spreadPredictRun <- function(sim) {
 
   fireSense_SpreadCovariates <- copy(sim$fireSense_SpreadCovariates)
 
-  if (!is(sim$fireSense_SpreadFitted, "fireSense_SpreadFit")) {
-    stop(moduleName, "> '", sim$fireSense_spreadFitted, "' should be of class 'fireSense_SpreadFit")
-  }
+  # if (!is(sim$fireSense_SpreadFitted, "fireSense_SpreadFit")) {
+  #   stop(moduleName, "> '", sim$fireSense_spreadFitted, "' should be of class 'fireSense_SpreadFit")
+  # }
 
   # Load inputs in the data container
   mod_env <- new.env(parent = globalenv())
   list2env(fireSense_SpreadCovariates, env = mod_env)
   ## In case there is a response in the formula remove it
-  terms <- as.formula(sim$fireSense_SpreadFitted$formula) %>%
-    terms.formula() %>%
-    delete.response()
 
-  formula <- reformulate(attr(terms, "term.labels"), intercept = attr(terms, "intercept"))
-  allxy <- all.vars(formula)
+  if (FALSE) {
+    # The old way prior to June 2, 2025
 
-  missing <- !allxy %in% ls(mod_env, all.names = TRUE)
-  if (s <- sum(missing)) {
-    stop(
-      moduleName, "> '", allxy[missing][1L], "'",
-      if (s > 1) paste0(" (and ", s - 1L, " other", if (s > 2) "s", ")"),
-      " not found in data objects."
-    )
-  }
+    terms <- as.formula(sim$fireSense_SpreadFitted$formula) %>%
+      terms.formula() %>%
+      delete.response()
 
-  ###################################################
-  # Convert stacks to lists of data.table objects --> much more compact
-  ###################################################
-  # First for stacks that are "annual"
+    formula <- reformulate(attr(terms, "term.labels"), intercept = attr(terms, "intercept"))
+    allxy <- all.vars(formula)
 
-  # # Rescale to numerics and /1000
-  if (!is.null(sim$covMinMax_spread)) {
-    for (cn in names(sim$covMinMax_spread)) {
-      set(
-        fireSense_SpreadCovariates, NULL, cn,
-        rescaleKnown2(x = fireSense_SpreadCovariates[[cn]],
-                      minNew = 0,
-                      maxNew = 1000,
-                      minOrig = sim$covMinMax_spread[[cn]][1],
-                      maxOrig = sim$covMinMax_spread[[cn]][2])
+    missing <- !allxy %in% ls(mod_env, all.names = TRUE)
+    if (s <- sum(missing)) {
+      stop(
+        moduleName, "> '", allxy[missing][1L], "'",
+        if (s > 1) paste0(" (and ", s - 1L, " other", if (s > 2) "s", ")"),
+        " not found in data objects."
       )
     }
+
+    ###################################################
+    # Convert stacks to lists of data.table objects --> much more compact
+    ###################################################
+    # First for stacks that are "annual"
+
+    # # Rescale to numerics and /1000
+    if (!is.null(sim$covMinMax_spread)) {
+      for (cn in names(sim$covMinMax_spread)) {
+        set(
+          fireSense_SpreadCovariates, NULL, cn,
+          rescaleKnown2(x = fireSense_SpreadCovariates[[cn]],
+                        minNew = 0,
+                        maxNew = 1000,
+                        minOrig = sim$covMinMax_spread[[cn]][1],
+                        maxOrig = sim$covMinMax_spread[[cn]][2])
+        )
+      }
+    }
+
+    if (!is.null(P(sim)$mutuallyExclusiveCols)) {
+      fireSense_SpreadCovariates <- makeMutuallyExclusive(
+        dt = fireSense_SpreadCovariates,
+        mutuallyExclusiveCols = P(sim)$mutuallyExclusiveCols
+      )
+    }
+
+    colsToUse <- setdiff(names(fireSense_SpreadCovariates), "pixelID")
+    parsModel <- length(colsToUse)
+
+
+    par <- sim$fireSense_SpreadFitted[[P(sim)$coefToUse]]
+    mat <- as.matrix(fireSense_SpreadCovariates[, ..colsToUse])/1000 # Divide by 1000 for the model prediction
+
+    # matrix multiplication
+    covPars <- tail(x = par, n = parsModel)
+    logisticPars <- head(x = par, n = length(par) - parsModel)
+    # Make sure the order is correct in the matrix
+    matching <- match(names(covPars), colnames(mat))
+    mat <- mat[, matching]
+    if (length(logisticPars) == 4) {
+      set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic4p(mat %*% covPars, logisticPars))
+    } else if (length(logisticPars) == 3) {
+      set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic3p(mat %*% covPars, logisticPars,
+                                                                     par1 = P(sim)$lowerSpreadProb))
+    } else if (length(logisticPars) == 2) {
+      set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic2p(mat %*% covPars, logisticPars,
+                                                                     par1 = P(sim)$lowerSpreadProb))
+    }
+
+    # Return to raster format
+    sim$fireSense_SpreadPredicted <- rast(sim$flammableRTM) ## use flammableRTM as template
+    ## Need to track what is happening with missing pixels
+    if (FALSE) {
+      nFlam <- sum(getValues(sim$flammableRTM), na.rm = TRUE)
+      nLand <- nrow(sim$landcoverDT)
+      nSpread <- nrow(sim$fireSense_SpreadCovariates)
+      nIg <- nrow(sim$fireSense_IgnitionAndEscapeCovariates)
+    }
+    sim$fireSense_SpreadPredicted[fireSense_SpreadCovariates$pixelID] <- fireSense_SpreadCovariates$spreadProb
+
+  } else {
+    sim$studyAreaWithSpreadParams
+
+
+    terms <- as.formula(sim$fireSense_spreadFormula) %>%
+      terms.formula() %>%
+      delete.response()
+
+    formula <- reformulate(attr(terms, "term.labels"), intercept = attr(terms, "intercept"))
+    allxy <- all.vars(formula)
+
+    missing <- !allxy %in% ls(mod_env, all.names = TRUE)
+    if (s <- sum(missing)) {
+      stop(
+        moduleName, "> '", allxy[missing][1L], "'",
+        if (s > 1) paste0(" (and ", s - 1L, " other", if (s > 2) "s", ")"),
+        " not found in data objects."
+      )
+    }
+
+    ###################################################
+    # Convert stacks to lists of data.table objects --> much more compact
+    ###################################################
+    # First for stacks that are "annual"
+
+    # # Rescale to numerics and /1000
+    if (!is.null(sim$covMinMax_spread)) {
+      for (cn in names(sim$covMinMax_spread)) {
+        set(
+          fireSense_SpreadCovariates, NULL, cn,
+          rescaleKnown2(x = fireSense_SpreadCovariates[[cn]],
+                        minNew = 0,
+                        maxNew = 1000,
+                        minOrig = sim$covMinMax_spread[[cn]][1],
+                        maxOrig = sim$covMinMax_spread[[cn]][2])
+        )
+      }
+    }
+
+    if (!is.null(P(sim)$mutuallyExclusiveCols)) {
+      fireSense_SpreadCovariates <- makeMutuallyExclusive(
+        dt = fireSense_SpreadCovariates,
+        mutuallyExclusiveCols = P(sim)$mutuallyExclusiveCols
+      )
+    }
+
+    colsToUse <- setdiff(names(fireSense_SpreadCovariates), "pixelID")
+    parsModel <- length(colsToUse)
+
+    par <- sim$studyAreaWithSpreadParams$params[[1]][1,] |> as.vector() |> unlist()
+    mat <- as.matrix(fireSense_SpreadCovariates[, ..colsToUse])/1000 # Divide by 1000 for the model prediction
+
+    # matrix multiplication
+    covPars <- tail(x = par, n = parsModel)
+    logisticPars <- head(x = par, n = length(par) - parsModel)
+    # Make sure the order is correct in the matrix
+    matching <- match(names(covPars), colnames(mat))
+    mat <- mat[, matching]
+
+    fireSense_SpreadCovariates <- logisticAll(logisticPars, fireSense_SpreadCovariates,
+                                              mat, covPars, P(sim)$lowerSpreadProb)
+    # if (length(logisticPars) == 4) {
+    #   set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic4p(mat %*% covPars, logisticPars))
+    # } else if (length(logisticPars) == 3) {
+    #   set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic3p(mat %*% covPars, logisticPars,
+    #                                                                  par1 = P(sim)$lowerSpreadProb))
+    # } else if (length(logisticPars) == 2) {
+    #   set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic2p(mat %*% covPars, logisticPars,
+    #                                                                  par1 = P(sim)$lowerSpreadProb))
+    # }
+
+    # Return to raster format
+    sim$fireSense_SpreadPredicted <- rast(sim$flammableRTM) ## use flammableRTM as template
+    ## Need to track what is happening with missing pixels
+    if (FALSE) {
+      nFlam <- sum(getValues(sim$flammableRTM), na.rm = TRUE)
+      nLand <- nrow(sim$landcoverDT)
+      nSpread <- nrow(sim$fireSense_SpreadCovariates)
+      nIg <- nrow(sim$fireSense_IgnitionAndEscapeCovariates)
+    }
+    sim$fireSense_SpreadPredicted[fireSense_SpreadCovariates$pixelID] <- fireSense_SpreadCovariates$spreadProb
+
   }
-
-  if (!is.null(P(sim)$mutuallyExclusiveCols)) {
-    fireSense_SpreadCovariates <- makeMutuallyExclusive(
-      dt = fireSense_SpreadCovariates,
-      mutuallyExclusiveCols = P(sim)$mutuallyExclusiveCols
-    )
-  }
-
-  colsToUse <- setdiff(names(fireSense_SpreadCovariates), "pixelID")
-  parsModel <- length(colsToUse)
-
-
-  par <- sim$fireSense_SpreadFitted[[P(sim)$coefToUse]]
-  mat <- as.matrix(fireSense_SpreadCovariates[, ..colsToUse])/1000 # Divide by 1000 for the model prediction
-
-  # matrix multiplication
-  covPars <- tail(x = par, n = parsModel)
-  logisticPars <- head(x = par, n = length(par) - parsModel)
-  # Make sure the order is correct in the matrix
-  matching <- match(names(covPars), colnames(mat))
-  mat <- mat[, matching]
-  if (length(logisticPars) == 4) {
-    set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic4p(mat %*% covPars, logisticPars))
-  } else if (length(logisticPars) == 3) {
-    set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic3p(mat %*% covPars, logisticPars,
-                                                                   par1 = P(sim)$lowerSpreadProb))
-  } else if (length(logisticPars) == 2) {
-    set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic2p(mat %*% covPars, logisticPars,
-                                                                   par1 = P(sim)$lowerSpreadProb))
-  }
-
-  # Return to raster format
-  sim$fireSense_SpreadPredicted <- rast(sim$flammableRTM) ## use flammableRTM as template
-  ## Need to track what is happening with missing pixels
-  if (FALSE) {
-    nFlam <- sum(getValues(sim$flammableRTM), na.rm = TRUE)
-    nLand <- nrow(sim$landcoverDT)
-    nSpread <- nrow(sim$fireSense_SpreadCovariates)
-    nIg <- nrow(sim$fireSense_IgnitionAndEscapeCovariates)
-  }
-  sim$fireSense_SpreadPredicted[fireSense_SpreadCovariates$pixelID] <- fireSense_SpreadCovariates$spreadProb
 
   invisible(sim)
 }
