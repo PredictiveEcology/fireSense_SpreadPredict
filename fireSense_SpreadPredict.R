@@ -27,6 +27,10 @@ defineModule(sim, list(
                                  "the average (meanCoef; default).")),
     defineParameter(name = "lowerSpreadProb", class = "numeric", default = 0.13,
                     desc = "Lower spread probability"),
+    defineParameter("maxFireSpread", "numeric", default = 0.28,
+                    desc = paste0("optional. Maximum fire spread average to be passed to the `.objFun`.",
+                                  "This puts an upper limit on `spreadProb` during optimization. Expected to be same ",
+                                  "as fireSpread_SpreadFit parameter value")),
     defineParameter(name = "mutuallyExclusiveCols", "list", default = list("youngAge" = "fuels"), NA, NA,
                     desc = paste("a named list, where the name of the list must be a covariate in the data.table.",
                                  "Covariates matching the values in each list element will be set to 0.",
@@ -69,6 +73,9 @@ doEvent.fireSense_SpreadPredict <- function(sim, eventTime, eventType, debug = F
     eventType,
     init = {
 
+      SpaDES.core::paramCheckOtherMods(sim, paramToCheck = "maxFireSpread", moduleToUse = "all")
+      SpaDES.core::paramCheckOtherMods(sim, paramToCheck = "maxFireSpread", moduleToUse = "all")
+      
       sim <- scheduleEvent(sim, eventTime = P(sim)$.runInitialTime, moduleName, "run",
                            eventPriority = 5.12)
 
@@ -188,6 +195,7 @@ spreadPredictRun <- function(sim) {
     }
 
     # Return to raster format
+    browser() # convert to sim$flammableRTMs
     sim$fireSense_SpreadPredicted <- rast(sim$flammableRTM) ## use flammableRTM as template
     ## Need to track what is happening with missing pixels
     if (FALSE) {
@@ -225,44 +233,62 @@ spreadPredictRun <- function(sim) {
     shortAnnDTx1000 <- toX1000(list(fireSense_SpreadCovariates))[[1]] |> setDT()
     colsToUse <- setdiff(names(fireSense_SpreadCovariates), "pixelID")
 
-    shortAnnDTx1000 <-
+    logisticPars <- sim$studyAreaWithSpreadParams$params[[1]]
+    
+    shortAnnDT <- # shortAnnDTx1000 <-
       spreadProbFromIntegerCovs(shortAnnDTx1000 = shortAnnDTx1000, # annDTx1000, nonAnnualDTx1000,
-                                # indexNonAnnual, # yr,
+                                # indexNonAnnual, 
+                                yr = time(sim),
                                 covMinMax = sim$covMinMax_spread,
                                 mutuallyExclusive = NULL, # alraedy done in dataPrepPredict
                                 colsToUse = colsToUse,
-                                doAssertions = FALSE#,
-                                # logisticPars, covPars, maxFireSpread, lowerSpreadProb
+                                doAssertions = FALSE,
+                                logisticPars = logisticPars, # covPars, 
+                                maxFireSpread = Par$maxFireSpread
+                                # , lowerSpreadProb # this is set at 0.13
                                 )
 
+    # THIS IS INSIDE fireSenseUtils::objFunInner
+    # set(shortAnnDTx1000, NULL, "spreadProb",
+    #     logisticAll(logisticPars, mat = as.matrix(shortAnnDTx1000[, ..colsToUse]), covPars, lowerSpreadProb))
+    
     parsModel <- length(colsToUse)
     # par <- purrr::pmap(.l = list(ind = seq(NROW(sim$studyAreaWithSpreadParams$params[[1]]))),
     #                    sa = sim$studyAreaWithSpreadParams, function(ind, sa) {
     #                      sa$params[[1]][ind,] |> as.vector() |> unlist()
     #                    })
-    mat <- as.matrix(shortAnnDTx1000[, ..colsToUse])
+    mat <- as.matrix(shortAnnDT[, ..colsToUse])
 
+    # for replicate "best" params from DEoptim
     spreadProbList <- purrr::pmap(.l = list(ind = seq(NROW(sim$studyAreaWithSpreadParams$params[[1]]))),
                        sa = sim$studyAreaWithSpreadParams, function(ind, sa) {
                          par <- sa$params[[1]][ind,] |> as.vector() |> unlist()
                          # mat <- as.matrix(fireSense_SpreadCovariates[, ..colsToUse])/1000 # Divide by 1000 for the model prediction
-
-                         params <- paramsSeparate(par, parsModel)
+                         
+                         covPars <- intersect(names(par), colsToUse)
+                         covPars <- par[covPars]
+                         logisticPars <- par[setdiff(names(par), names(covPars))]
+                         # params <- paramsSeparate(par, parsModel)
                          # matrix multiplication
-                         covPars <- params$covPars
-                         logisticPars <- params$logisticPars
+                         # covPars <- params$covPars
+                         # logisticPars <- params$logisticPars
                          # Make sure the order is correct in the matrix
-                         matching <- match(names(covPars), colnames(mat))
+                         matching <- intersect(names(covPars), colnames(mat))
+                         missingCovs <- setdiff(colnames(mat), names(covPars))
+                         if (length(missingCovs))
+                           warning("There are covariates in the sim$fireSense_SpreadCovariates: \n",
+                                paste0(missingCovs, collapse = ", "),
+                                "\n...that are not in the sim$studyAreaWithSpreadParams")
                          mat <- mat[, matching]
 
                          logisticAll(logisticPars, #fireSense_SpreadCovariates,
                                      mat, covPars, P(sim)$lowerSpreadProb)
                        })
     spreadProbMat <- do.call(cbind, spreadProbList)
-
+    
     # spreadProbMat <- spreadProbMat[, which.min(colMeans(spreadProbMat))]
 
-    set(shortAnnDTx1000, NULL, "spreadProb", rowMeans(spreadProbMat))
+    set(shortAnnDT, NULL, "spreadProb", rowMeans(spreadProbMat))
 
     # par <- sim$studyAreaWithSpreadParams$params[[1]][1,] |> as.vector() |> unlist()
     # mat <- as.matrix(fireSense_SpreadCovariates[, ..colsToUse])/1000 # Divide by 1000 for the model prediction
@@ -295,7 +321,7 @@ spreadPredictRun <- function(sim) {
       nSpread <- nrow(sim$fireSense_SpreadCovariates)
       nIg <- nrow(sim$fireSense_IgnitionAndEscapeCovariates)
     }
-    sim$fireSense_SpreadPredicted[shortAnnDTx1000$pixelID] <- shortAnnDTx1000$spreadProb
+    sim$fireSense_SpreadPredicted[shortAnnDT$pixelID] <- shortAnnDT$spreadProb
 
   }
 
