@@ -10,7 +10,7 @@ defineModule(sim, list(
     person("Alex M.", "Chubaty", email = "achubaty@for-cast.ca", role = c("ctb"))
   ),
   childModules = character(),
-  version = list(fireSense_SpreadPredict = "0.0.1", SpaDES.core = "0.1.0"),
+  version = list(fireSense_SpreadPredict = "0.0.2", SpaDES.core = "0.1.0"),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
@@ -123,7 +123,7 @@ spreadPredictRun <- function(sim) {
 
   # Load inputs in the data container
   mod_env <- new.env(parent = globalenv())
-  list2env(fireSense_SpreadCovariates, env = mod_env)
+  list2env(fireSense_SpreadCovariates, envir = mod_env)
   ## In case there is a response in the formula remove it
 
   if (FALSE) {
