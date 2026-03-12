@@ -15,9 +15,9 @@ defineModule(sim, list(
   timeunit = "year",
   citation = list("citation.bib"),
   documentation = list("README.txt", "fireSense_SpreadPredict.Rmd"),
-  reqdPkgs = list("magrittr", "Matrix", "methods", "terra", "SpaDES.core", "stats",
+  reqdPkgs = list("magrittr", "Matrix", "methods", "terra", "SpaDES.core (>=3.0.4)", "stats",
                   "ggplot2", "viridis",
-                  "PredictiveEcology/fireSenseUtils@development (>= 0.0.5.9097)"),
+                  "PredictiveEcology/fireSenseUtils@development (>= 0.1.0)"),
   parameters = bindrows(
     defineParameter(name = "climCol", class = "character", default = "MDC", min = NA, max = NA,
                     desc = "the name of the climate covariate in `sim$fireSense_spreadCovariates`"),
