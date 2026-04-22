@@ -19,8 +19,8 @@ defineModule(sim, list(
                   "ggplot2", "viridis",
                   "PredictiveEcology/fireSenseUtils@development (>= 0.1.0)"),
   parameters = bindrows(
-    defineParameter(name = "climCol", class = "character", default = "MDC", min = NA, max = NA,
-                    desc = "the name of the climate covariate in `sim$fireSense_spreadCovariates`"),
+    # defineParameter(name = "climCol", class = "character", default = "MDC", min = NA, max = NA,
+    #                 desc = "the name of the climate covariate in `sim$fireSense_spreadCovariates`"),
     defineParameter(name = "coefToUse", class = "character", default = "meanCoef",
                     desc = paste("Which coefficient to use to predict?",
                                  "The best coefficient (bestCoef) from DEOPtim or ",
@@ -195,7 +195,7 @@ spreadPredictRun <- function(sim) {
     }
 
     # Return to raster format
-    browser() # convert to sim$flammableRTMs
+    # convert to sim$flammableRTMs
     sim$fireSense_SpreadPredicted <- rast(sim$flammableRTM) ## use flammableRTM as template
     ## Need to track what is happening with missing pixels
     if (FALSE) {
@@ -207,7 +207,7 @@ spreadPredictRun <- function(sim) {
     sim$fireSense_SpreadPredicted[fireSense_SpreadCovariates$pixelID] <- fireSense_SpreadCovariates$spreadProb
 
   } else {
-    sim$studyAreaWithSpreadParams
+    # sim$studyAreaWithSpreadParams
 
 
     terms <- as.formula(sim$fireSense_spreadFormula) %>%
@@ -300,7 +300,6 @@ spreadPredictRun <- function(sim) {
     # matching <- match(names(covPars), colnames(mat))
     # mat <- mat[, matching]
     #
-    # browser()
     # preds <- logisticAll(logisticPars, mat, covPars, P(sim)$lowerSpreadProb)
     # if (length(logisticPars) == 4) {
     #   set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic4p(mat %*% covPars, logisticPars))
