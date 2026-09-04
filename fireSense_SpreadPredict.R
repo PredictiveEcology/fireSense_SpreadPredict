@@ -3,11 +3,11 @@ defineModule(sim, list(
   description = "Predicts a surface of fire spread probilities using a model fitted with fireSense_SpreadFit.",
   keywords = c("fire spread", "fireSense", "predict"),
   authors = c(
-    person("Jean", "Marchal", email = "jean.d.marchal@gmail.com", role = "aut"),
     person("Eliot", "McIntire", email = "eliot.mcintire@nrcan-rncan.gc.ca", role = c("aut", "cre")),
-    person("Tati", "Michelleti", email = "tati.micheletti@gmail.com", role = "aut"),
+    person("Tati", "Micheletti", email = "tati.micheletti@gmail.com", role = "aut"),
     person("Ian", "Eddy", email = "ian.eddy@nrcan-rncan.gc.ca", role = "aut"),
-    person("Alex M.", "Chubaty", email = "achubaty@for-cast.ca", role = c("ctb"))
+    person("Jean", "Marchal", email = "jean.d.marchal@gmail.com", role = "aut"),
+    person("Alex M.", "Chubaty", email = "achubaty@for-cast.ca", role = "ctb")
   ),
   childModules = character(),
   version = list(fireSense_SpreadPredict = "0.0.2", SpaDES.core = "0.1.0"),
