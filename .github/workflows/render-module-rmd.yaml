@@ -1,69 +1,43 @@
+## Thin caller. The job itself lives in PredictiveEcology/actions, so the pins
+## for install-spatial-deps, install-Require, install-SpaDES and install-Rmd-pkgs
+## live there too and move once, instead of being frozen into every module
+## repository on the day it was created.
+##
+## The hand-rolled job this replaces pinned install-spatial-deps@v0.2, which adds
+## the ubuntugis PPA. Its GDAL is ABI-incompatible with the terra binary in
+## Posit's noble cache, so every run died at
+## `libgdal.so.34: cannot open shared object file` before rendering anything.
+##
+## https://github.com/PredictiveEcology/actions/blob/main/.github/workflows/render-module-rmd.yaml
+
+name: Render module Rmd
+
 on:
   pull_request:
     branches:
+      - main
       - master
       - development
   push:
     branches:
+      - main
       - master
       - development
     paths:
       - .github/workflows/render-module-rmd.yaml
       - fireSense_SpreadPredict.Rmd
       - fireSense_SpreadPredict.R
-
-name: Render module Rmd
+  workflow_dispatch:
 
 jobs:
-  render:
-    name: Render module Rmd
-    runs-on: ubuntu-20.04
-
-    env:
-      RSPM: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: r-lib/actions/setup-r@v1
-      - uses: r-lib/actions/setup-pandoc@v1
-      - name: Install GDAL and other dependencies
-        run: |
-          sudo apt-get install -y \
-            libcurl4-openssl-dev \
-            libgdal-dev \
-            libgeos-dev \
-            libgit2-dev \
-            libglpk-dev \
-            libmagick++-dev \
-            libproj-dev \
-            libudunits2-dev \
-            libxml2-dev \
-            python3-gdal
-      - name: Install remotes, knitr, rmarkdown
-        run: |
-          install.packages("remotes")
-          remotes::install_cran("rmarkdown")
-          remotes::install_cran("knitr")
-        shell: Rscript {0}
-      - name: Install SpaDES
-        run: |
-          remotes::install_github("traversc/stringfish")
-          remotes::install_github("PredictiveEcology/Require@development")
-          remotes::install_github("PredictiveEcology/reproducible@development", dependencies = TRUE)
-          remotes::install_github("PredictiveEcology/SpaDES.core@development", dependencies = TRUE)
-          remotes::install_github("PredictiveEcology/SpaDES.tools@development", dependencies = TRUE)
-        shell: Rscript {0}
-      - name: Install module package dependencies
-        run: |
-          pkgs <- SpaDES.core::packages(modules = "fireSense_SpreadPredict", paths = "..")[[1]]
-          Require::Require(pkgs)
-        shell: Rscript {0}
-      - name: Render module Rmd
-        run: Rscript -e 'rmarkdown::render("fireSense_SpreadPredict.Rmd", encoding = "UTF-8")'
-      - name: Commit results
-        run: |
-          git config user.email "actions@github.com"
-          git config user.name "GitHub Actions"
-          git commit fireSense_SpreadPredict.html -m 'Re-build fireSense_SpreadPredict.Rmd' || echo "No changes to commit"
-          git push https://${{github.actor}}:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}.git HEAD:${{ github.ref }} || echo "No changes to commit"
+  render-module-rmd:
+    ## The called workflow splits `render` (contents: read, which installs and
+    ## then executes this module's own code) from `commit` (contents: write,
+    ## which runs nothing but git). A called workflow can only reduce what is
+    ## granted here, never widen it, so the write scope has to be granted at the
+    ## call site.
+    permissions:
+      contents: write
+    uses: PredictiveEcology/actions/.github/workflows/render-module-rmd.yaml@main
+    with:
+      module: fireSense_SpreadPredict

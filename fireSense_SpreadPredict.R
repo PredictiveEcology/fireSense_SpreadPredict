@@ -3,105 +3,66 @@ defineModule(sim, list(
   description = "Predicts a surface of fire spread probilities using a model fitted with fireSense_SpreadFit.",
   keywords = c("fire spread", "fireSense", "predict"),
   authors = c(
-    person("Jean", "Marchal", email = "jean.d.marchal@gmail.com", role = c("aut", "cre")),
-    person("Eliot", "McIntire", email = "eliot.mcintire@canada.ca", role = "aut"),
-    person("Tati", "Michelleti", email = "tati.micheletti@gmail.com", role = "aut")
+    person("Eliot", "McIntire", email = "eliot.mcintire@nrcan-rncan.gc.ca", role = c("aut", "cre")),
+    person("Tati", "Micheletti", email = "tati.micheletti@gmail.com", role = "aut"),
+    person("Ian", "Eddy", email = "ian.eddy@nrcan-rncan.gc.ca", role = "aut"),
+    person("Jean", "Marchal", email = "jean.d.marchal@gmail.com", role = "aut"),
+    person("Alex M.", "Chubaty", email = "achubaty@for-cast.ca", role = "ctb")
   ),
   childModules = character(),
-  version = list(fireSense_SpreadPredict = "0.0.1", SpaDES.core = "0.1.0"),
-  spatialExtent = raster::extent(rep(NA_real_, 4)),
+  version = list(fireSense_SpreadPredict = "1.0.0", SpaDES.core = "0.1.0"),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
   documentation = list("README.txt", "fireSense_SpreadPredict.Rmd"),
-  reqdPkgs = list("magrittr", "Matrix", "methods", "raster", "SpaDES.core", "stats",
+  reqdPkgs = list("magrittr", "Matrix", "methods", "terra", "SpaDES.core (>=3.0.4)", "stats",
                   "ggplot2", "viridis",
-                  "PredictiveEcology/fireSenseUtils@development"),
-  parameters = rbind(
-    # defineParameter("paramName", "paramClass", default, min, max, "parameter description")),
-    defineParameter(
-      name = "modelObjName", class = "character",
-      default = "fireSense_SpreadFitted",
-      desc = paste("a character vector indicating the name of a model object created with",
-                   "the fireSense_SpreadFit module.")
-    ),
-    defineParameter(
-      name = "data", class = "character",
-      default = "dataFireSense_SpreadPredict",
-      desc = paste("a character vector indicating the names of objects in the simList environment",
-                   "in which to look for variables present in the model formula.",
-                   "`data` objects can be RasterLayers, RasterStacks or RasterBricks.")
-    ),
-    defineParameter(
-      name = "mapping", class = "character, list", default = NULL,
-      desc = paste("optional named vector or list of character strings mapping one or more",
-                   "variables in the model formula to those in data objects.")
-    ),
-    defineParameter(
-      name = ".runInitialTime", class = "numeric", default = start(sim),
-      desc = "when to start this module? By default, the start time of the simulation."
-    ),
-    defineParameter(
-      name = ".runInterval", class = "numeric", default = 1,
-      desc = paste("optional. Interval between two runs of this module, expressed in units of simulation time.",
-                   "By default, 1 year.")
-    ),
-    defineParameter(
-      name = ".saveInitialTime", class = "numeric", default = NA,
-      desc = "optional. When to start saving output to a file."
-    ),
-    defineParameter(
-      name = ".saveInterval", class = "numeric", default = NA,
-      desc = "optional. Interval between save events."
-    ),
-    defineParameter(
-      name = "lowerSpreadProb", class = "numeric", default = 0.13,
-      desc = "Lower spread probability"
-    ),
-    defineParameter(
-      name = "typesOfFuel", class = "character",
-      default = c("Young", "Deciduous", "Conifer", "Jack Pine", "Other"),
-      desc = "Names of the types of fuels corresponding to the classes in the formula. For plotting"
-    ),
-    defineParameter(
-      name = "coefToUse", class = "character",
-      default = "bestCoef", # meanCoef
-      desc = paste0("Which coefficient to use to predict? The best coefficient ",
-                    "(bestCoef) from DEOPtim or the average (meanCoef)",
-                    "default is bestCoef")
-    ),
+                  "PredictiveEcology/fireSenseUtils@development (>= 0.1.0)"),
+  parameters = bindrows(
+    # defineParameter(name = "climCol", class = "character", default = "MDC", min = NA, max = NA,
+    #                 desc = "the name of the climate covariate in `sim$fireSense_spreadCovariates`"),
+    defineParameter(name = "coefToUse", class = "character", default = "meanCoef",
+                    desc = paste("Which coefficient to use to predict?",
+                                 "The best coefficient (bestCoef) from DEOPtim or ",
+                                 "the average (meanCoef; default).")),
+    defineParameter(name = "lowerSpreadProb", class = "numeric", default = 0.13,
+                    desc = "Lower spread probability"),
+    defineParameter("maxFireSpread", "numeric", default = 0.28,
+                    desc = paste0("optional. Maximum fire spread average to be passed to the `.objFun`.",
+                                  "This puts an upper limit on `spreadProb` during optimization. Expected to be same ",
+                                  "as fireSpread_SpreadFit parameter value")),
+    defineParameter(name = "mutuallyExclusiveCols", "list", default = list("youngAge" = "fuels"), NA, NA,
+                    desc = paste("a named list, where the name of the list must be a covariate in the data.table.",
+                                 "Covariates matching the values in each list element will be set to 0.",
+                                 "List content should be a grep regex.")),
+    defineParameter(name = ".runInitialTime", class = "numeric", default = start(sim),
+                    desc = "when to start this module? By default, the start time of the simulation."),
+    defineParameter(name = ".runInterval", class = "numeric", default = 1,
+                    desc = paste("optional. Interval between two runs of this module, expressed in units of",
+                                 "simulation time.Defaults to 1 year.")),
+    defineParameter(name = ".saveInitialTime", class = "numeric", default = NA,
+                    desc = "optional. When to start saving output to a file."),
+    defineParameter(name = ".saveInterval", class = "numeric", default = NA,
+                    desc = "optional. Interval between save events."),
     defineParameter(".useCache", "logical", FALSE, NA, NA,
                     paste("Should this entire module be run with caching activated?",
-                          "This is generally intended for data-type modules, where stochasticity",
-                          "and time are not relevant")
-    )
+                          "This is generally intended for data-type modules, where stochasticity and time are not relevant"))
   ),
-  inputObjects = rbind(
-    expectsInput(
-      objectName = "fireSense_SpreadFitted",
-      objectClass = "fireSense_SpreadFit",
-      sourceURL = NA_character_,
-      desc = "An object of class 'fireSense_SpreadFit' created by the fireSense_SpreadFit module."
-    ),
-    expectsInput(
-      objectName = "dataFireSense_SpreadPredict",
-      objectClass = "RasterLayer, RasterStack",
-      sourceURL = NA_character_,
-      desc = "One or more RasterLayers or RasterStacks in which to look for variables present in the model formula."
-    )
+  inputObjects = bindrows(
+    expectsInput(objectName = "covMinMax_spread", objectClass = "data.table",
+                 desc = "range used to rescale coefficients during spreadFit"),
+    expectsInput(objectName = "fireSense_SpreadCovariates", objectClass = "data.table",
+                 desc = "data.table of covariates with pixelID column corresponding to flammableRTM index."),
+    expectsInput(objectName = "fireSense_SpreadFitted", objectClass = "fireSense_SpreadFit",
+                 desc = "An object of class 'fireSense_SpreadFit' created by the fireSense_SpreadFit module."),
+    expectsInput(objectName = "flammableRTM", objectClass = "SpatRaster", sourceURL = NA,
+                 desc = "RTM with nonflammable pixels coded as 0 and flammable as 1.")
   ),
-  outputObjects = createsOutput(
-    objectName = "fireSense_SpreadPredicted",
-    objectClass = "RasterLayer, RasterStack",
-    desc = "An object whose class depends on that of the inputs, could be a RasterLayer or a RasterStack."
-  ),
-  outputObjects = createsOutput(
-    objectName = "spreadPredictedProbability",
-    objectClass = "list",
-    desc = "List of spread probability rasters."
-  )
-))
-
+  outputObjects = bindrows(
+    createsOutput(objectName = "fireSense_SpreadPredicted", objectClass = "SpatRaster",
+                  desc = "A raster layer of spread probabilities")
+  ))
+)
 ## event types
 #   - type `init` is required for initialiazation
 
@@ -112,9 +73,11 @@ doEvent.fireSense_SpreadPredict <- function(sim, eventTime, eventType, debug = F
     eventType,
     init = {
 
-      sim$spreadPredictedProbability <- list()
-
-      sim <- scheduleEvent(sim, eventTime = P(sim)$.runInitialTime, moduleName, "run")
+      SpaDES.core::paramCheckOtherMods(sim, paramToCheck = "maxFireSpread", moduleToUse = "all")
+      SpaDES.core::paramCheckOtherMods(sim, paramToCheck = "maxFireSpread", moduleToUse = "all")
+      
+      sim <- scheduleEvent(sim, eventTime = P(sim)$.runInitialTime, moduleName, "run",
+                           eventPriority = 5.12)
 
       if (!is.na(P(sim)$.saveInitialTime)) {
         sim <- scheduleEvent(sim, P(sim)$.saveInitialTime, moduleName, "save", .last())
@@ -124,7 +87,8 @@ doEvent.fireSense_SpreadPredict <- function(sim, eventTime, eventType, debug = F
       sim <- spreadPredictRun(sim)
 
       if (!is.na(P(sim)$.runInterval)) {
-        sim <- scheduleEvent(sim, time(sim) + P(sim)$.runInterval, moduleName, "run")
+        sim <- scheduleEvent(sim, time(sim) + P(sim)$.runInterval, moduleName, "run",
+                             eventPriority = 5.12)
       }
     },
     save = {
@@ -135,8 +99,8 @@ doEvent.fireSense_SpreadPredict <- function(sim, eventTime, eventType, debug = F
       }
     },
     warning(paste("Undefined event type: '", current(sim)[1, "eventType", with = FALSE],
-      "' in module '", current(sim)[1, "moduleName", with = FALSE], "'",
-      sep = ""
+                  "' in module '", current(sim)[1, "moduleName", with = FALSE], "'",
+                  sep = ""
     ))
   )
 
@@ -151,142 +115,228 @@ doEvent.fireSense_SpreadPredict <- function(sim, eventTime, eventType, debug = F
 spreadPredictRun <- function(sim) {
   moduleName <- current(sim)$moduleName
 
-  if (!is(sim[[P(sim)$modelObjName]], "fireSense_SpreadFit")) {
-    stop(moduleName, "> '", P(sim)$modelObjName, "' should be of class 'fireSense_SpreadFit")
-  }
+  fireSense_SpreadCovariates <- copy(sim$fireSense_SpreadCovariates)
+
+  # if (!is(sim$fireSense_SpreadFitted, "fireSense_SpreadFit")) {
+  #   stop(moduleName, "> '", sim$fireSense_spreadFitted, "' should be of class 'fireSense_SpreadFit")
+  # }
 
   # Load inputs in the data container
-  # list2env(as.list(envir(sim)), envir = mod)
-
-  mod_env <- new.env()
-  for (x in P(sim)$data) {
-    if (!is.null(sim[[x]])) {
-      if (is(sim[[x]], "RasterStack") || is(sim[[x]], "RasterBrick")) {
-        list2env(setNames(unstack(sim[[x]]), names(sim[[x]])), envir = mod_env)
-      }
-      else if (is(sim[[x]], "RasterLayer")) {
-        mod_env[[x]] <- sim[[x]]
-      }
-      else {
-        stop(moduleName, "> '", x, "' is not a RasterLayer, a RasterStack or a RasterBrick.")
-      }
-    }
-  }
+  mod_env <- new.env(parent = globalenv())
+  list2env(fireSense_SpreadCovariates, envir = mod_env)
   ## In case there is a response in the formula remove it
-  terms <- sim[[P(sim)$modelObjName]]$formula %>%
-    terms.formula() %>%
-    delete.response()
 
-  ## Mapping variables names to data
-  if (!is.null(P(sim)$mapping)) {
-    for (i in 1:length(P(sim)$mapping))
-    {
-      attr(terms, "term.labels") %<>% gsub(
-        pattern = names(P(sim)$mapping[i]),
-        replacement = P(sim)$mapping[[i]],
-        x = .
+  if (FALSE) {
+    # The old way prior to June 2, 2025
+
+    terms <- as.formula(sim$fireSense_SpreadFitted$formula) %>%
+      terms.formula() %>%
+      delete.response()
+
+    formula <- reformulate(attr(terms, "term.labels"), intercept = attr(terms, "intercept"))
+    allxy <- all.vars(formula)
+
+    missing <- !allxy %in% ls(mod_env, all.names = TRUE)
+    if (s <- sum(missing)) {
+      stop(
+        moduleName, "> '", allxy[missing][1L], "'",
+        if (s > 1) paste0(" (and ", s - 1L, " other", if (s > 2) "s", ")"),
+        " not found in data objects."
       )
     }
-  }
 
-  formula <- reformulate(attr(terms, "term.labels"), intercept = attr(terms, "intercept"))
-  allxy <- all.vars(formula)
+    ###################################################
+    # Convert stacks to lists of data.table objects --> much more compact
+    ###################################################
+    # First for stacks that are "annual"
 
-  missing <- !allxy %in% ls(mod_env, all.names = TRUE)
-  if (s <- sum(missing)) {
-    stop(
-      moduleName, "> '", allxy[missing][1L], "'",
-      if (s > 1) paste0(" (and ", s - 1L, " other", if (s > 2) "s", ")"),
-      " not found in data objects."
-    )
-  }
-
-  ###################################################
-  # Convert stacks to lists of data.table objects --> much more compact
-  ###################################################
-  # First for stacks that are "annual"
-  whNotNA <- which(!is.na(sim$flammableRTM[]))
-  hash <- fastdigest(sim$dataFireSense_SpreadPredict)
-  fireSenseDataDTx1000  <- annualStackToDTx1000(annualStack = sim$dataFireSense_SpreadPredict,
-                                whNotNA = whNotNA,
-                                .fastHash = hash,
-                                timeSim = paste0("year", time(sim)),
-                                omitArgs = c("annualStack",
-                                      "rasterToMatch"))
-  # # Rescale to numerics and /1000
-  if (!is.null(sim$covMinMax)) {
-    for (cn in colnames(sim$covMinMax)) {
-      set(fireSenseDataDTx1000, NULL, cn,
-          rescaleKnown(x = fireSenseDataDTx1000[[cn]], minNew = 0, maxNew = 1000,
-                       minOrig = sim$covMinMax[[cn]][1], maxOrig = sim$covMinMax[[cn]][2]))
+    # # Rescale to numerics and /1000
+    if (!is.null(sim$covMinMax_spread)) {
+      for (cn in names(sim$covMinMax_spread)) {
+        set(
+          fireSense_SpreadCovariates, NULL, cn,
+          rescaleKnown2(x = fireSense_SpreadCovariates[[cn]],
+                        minNew = 0,
+                        maxNew = 1000,
+                        minOrig = sim$covMinMax_spread[[cn]][1],
+                        maxOrig = sim$covMinMax_spread[[cn]][2])
+        )
+      }
     }
-  } else {
-    fireSenseDataDTx1000 <- fireSenseDataDTx1000
-  }
-  colsToUse <- names(sim$dataFireSense_SpreadPredict)
-  parsModel <- length(colsToUse)
 
-  par <- sim$fireSense_SpreadFitted_year2011[[P(sim)$coefToUse]]
-  mat <- as.matrix(fireSenseDataDTx1000[, ..colsToUse])/1000 # Divide by 1000 for the model prediction
+    if (!is.null(P(sim)$mutuallyExclusiveCols)) {
+      fireSense_SpreadCovariates <- makeMutuallyExclusive(
+        dt = fireSense_SpreadCovariates,
+        mutuallyExclusiveCols = P(sim)$mutuallyExclusiveCols
+      )
+    }
 
-  # matrix multiplication
-  covPars <- tail(x = par, n = parsModel)
-  logisticPars <- head(x = par, n = length(par) - parsModel)
-  # Make sure the order is correct in the matrix
-  matching <- match(names(covPars), colnames(mat))
-  mat <- mat[, matching]
+    colsToUse <- setdiff(names(fireSense_SpreadCovariates), "pixelID")
+    parsModel <- length(colsToUse)
 
-  if (length(logisticPars) == 4) {
-    set(fireSenseDataDTx1000, NULL, "spreadProb", logistic4p(mat %*% covPars, logisticPars))
-  } else if (length(logisticPars) == 3) {
-    set(fireSenseDataDTx1000, NULL, "spreadProb", logistic3p(mat %*% covPars, logisticPars,
-                                                             par1 = P(sim)$lowerSpreadProb))
-  } else if (length(logisticPars) == 2) {
-    set(fireSenseDataDTx1000, NULL, "spreadProb", logistic2p(mat %*% covPars, logisticPars,
-                                                             par1 = P(sim)$lowerSpreadProb))
-  }
 
-  if (time(sim) == start(sim)) {
-    # We want a full distribution of the spread prob for each fuel type for the
-    # whole range of MDC
-    weatherValues <- sort(unique(mat[colnames(mat) == "weather"]))
-    thinned <- weatherValues[seq.int(1L, length(weatherValues), 10L)] # thin as we have 30k vals
-    # Spread probability of each fuel type.
-    # I need the whole thinned vector repeated the n times the number of params
-    # (length(covPars)-1)
-    thinnedExp <- data.table(weather = rep(thinned, times = length(covPars) - 1))
-    matExp <- data.table(matrix(rep(as.numeric(Matrix::diag(length(covPars) - 1)),
-                                    each = length(thinned)),
-                                ncol = length(covPars) - 1))
-    names(matExp) <- names(covPars)[names(covPars) != "weather"]
-    m <- as.matrix(cbind(thinnedExp, matExp))
-    # Now in data.table format so I can add spreadProb and
-    # make the plots
-    sim$spreadProbFuelType <- data.table(m)
-    sim$spreadProbFuelType$classType <- rep(names(sim$spreadProbFuelType)[-1],
-                                            each = length(thinned))
-    # Now I calculate the spreadProb
+    par <- sim$fireSense_SpreadFitted[[P(sim)$coefToUse]]
+    mat <- as.matrix(fireSense_SpreadCovariates[, ..colsToUse])/1000 # Divide by 1000 for the model prediction
+
+    # matrix multiplication
+    covPars <- tail(x = par, n = parsModel)
+    logisticPars <- head(x = par, n = length(par) - parsModel)
+    # Make sure the order is correct in the matrix
+    matching <- match(names(covPars), colnames(mat))
+    mat <- mat[, matching]
     if (length(logisticPars) == 4) {
-      set(sim$spreadProbFuelType, NULL, "spreadProb", logistic4p(m %*% covPars, logisticPars))
+      set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic4p(mat %*% covPars, logisticPars))
     } else if (length(logisticPars) == 3) {
-      set(sim$spreadProbFuelType, NULL, "spreadProb", logistic3p(m %*% covPars, logisticPars,
-                                                                 par1 = P(sim)$lowerSpreadProb))
+      set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic3p(mat %*% covPars, logisticPars,
+                                                                     par1 = P(sim)$lowerSpreadProb))
     } else if (length(logisticPars) == 2) {
-      set(sim$spreadProbFuelType, NULL, "spreadProb", logistic2p(m %*% covPars, logisticPars,
-                                                                 par1 = P(sim)$lowerSpreadProb))
+      set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic2p(mat %*% covPars, logisticPars,
+                                                                     par1 = P(sim)$lowerSpreadProb))
     }
 
-    coef <- ifelse(P(sim)$coefToUse == "bestCoef", "best coefficients", "averaged coefficients")
-    sim$spreadProbFuelType <- plotSpreadProbByFuelType(spreadProbFuelType = sim$spreadProbFuelType,
-                                                     typesOfFuel = P(sim)$typesOfFuel,
-                                                     coefToUse = coef,
-                                                     covMinMax = sim$covMinMax)
-  }
+    # Return to raster format
+    # convert to sim$flammableRTMs
+    sim$fireSense_SpreadPredicted <- rast(sim$flammableRTM) ## use flammableRTM as template
+    ## Need to track what is happening with missing pixels
+    if (FALSE) {
+      nFlam <- sum(getValues(sim$flammableRTM), na.rm = TRUE)
+      nLand <- nrow(sim$landcoverDT)
+      nSpread <- nrow(sim$fireSense_SpreadCovariates)
+      nIg <- nrow(sim$fireSense_IgnitionAndEscapeCovariates)
+    }
+    sim$fireSense_SpreadPredicted[fireSense_SpreadCovariates$pixelID] <- fireSense_SpreadCovariates$spreadProb
 
-  # Return to raster format
-  sim$fireSense_SpreadPredicted <- raster(sim$flammableRTM)
-  sim$fireSense_SpreadPredicted[whNotNA] <- fireSenseDataDTx1000$spreadProb
-  sim$spreadPredictedProbability[[paste0("Year", time(sim))]] <- sim$fireSense_SpreadPredicted
+  } else {
+    # sim$studyAreaWithSpreadParams
+
+
+    terms <- as.formula(sim$fireSense_spreadFormula) %>%
+      terms.formula() %>%
+      delete.response()
+
+    formula <- reformulate(attr(terms, "term.labels"), intercept = attr(terms, "intercept"))
+    allxy <- all.vars(formula)
+
+    missing <- !allxy %in% ls(mod_env, all.names = TRUE)
+    if (s <- sum(missing)) {
+      stop(
+        moduleName, "> '", allxy[missing][1L], "'",
+        if (s > 1) paste0(" (and ", s - 1L, " other", if (s > 2) "s", ")"),
+        " not found in data objects."
+      )
+    }
+
+    ###################################################
+    # Convert stacks to lists of data.table objects --> much more compact
+    ###################################################
+    # First for stacks that are "annual"
+    shortAnnDTx1000 <- toX1000(list(fireSense_SpreadCovariates))[[1]] |> setDT()
+    colsToUse <- setdiff(names(fireSense_SpreadCovariates), "pixelID")
+
+    # Without fitted parameters there is nothing to predict from; say so instead of
+    # dying in rowMeans() on an empty matrix (which is what an unfitted ELF produced
+    # when fireSense_SpreadFit had not run first). This must come before anything
+    # indexes `params[[1]]`: with zero rows that fails first, "subscript out of bounds".
+    nPar <- tryCatch(NROW(sim$studyAreaWithSpreadParams$params[[1]]), error = function(e) 0L)
+    if (NROW(sim$studyAreaWithSpreadParams) == 0L || is.null(nPar) || nPar == 0L)
+      stop("fireSense_SpreadPredict: sim$studyAreaWithSpreadParams holds no fitted spread ",
+           "parameters for this run (", if (!is.null(sim$.runName)) sim$.runName else "unknown",
+           "). Either fireSense_SpreadFit has not run yet -- its `run` event must precede this ",
+           "module's -- or the shared ledger has no row for this polygon.", call. = FALSE)
+
+    logisticPars <- sim$studyAreaWithSpreadParams$params[[1]]
+    
+    shortAnnDT <- # shortAnnDTx1000 <-
+      spreadProbFromIntegerCovs(shortAnnDTx1000 = shortAnnDTx1000, # annDTx1000, nonAnnualDTx1000,
+                                # indexNonAnnual, 
+                                yr = time(sim),
+                                covMinMax = sim$covMinMax_spread,
+                                mutuallyExclusive = NULL, # alraedy done in dataPrepPredict
+                                colsToUse = colsToUse,
+                                doAssertions = FALSE,
+                                logisticPars = logisticPars, # covPars, 
+                                maxFireSpread = Par$maxFireSpread
+                                # , lowerSpreadProb # this is set at 0.13
+                                )
+
+    # THIS IS INSIDE fireSenseUtils::objFunInner
+    # set(shortAnnDTx1000, NULL, "spreadProb",
+    #     logisticAll(logisticPars, mat = as.matrix(shortAnnDTx1000[, ..colsToUse]), covPars, lowerSpreadProb))
+    
+    parsModel <- length(colsToUse)
+    # par <- purrr::pmap(.l = list(ind = seq(NROW(sim$studyAreaWithSpreadParams$params[[1]]))),
+    #                    sa = sim$studyAreaWithSpreadParams, function(ind, sa) {
+    #                      sa$params[[1]][ind,] |> as.vector() |> unlist()
+    #                    })
+    mat <- as.matrix(shortAnnDT[, ..colsToUse])
+
+    # for replicate "best" params from DEoptim
+    spreadProbList <- purrr::pmap(.l = list(ind = seq(NROW(sim$studyAreaWithSpreadParams$params[[1]]))),
+                       sa = sim$studyAreaWithSpreadParams, function(ind, sa) {
+                         par <- sa$params[[1]][ind,] |> as.vector() |> unlist()
+                         # mat <- as.matrix(fireSense_SpreadCovariates[, ..colsToUse])/1000 # Divide by 1000 for the model prediction
+                         
+                         covPars <- intersect(names(par), colsToUse)
+                         covPars <- par[covPars]
+                         logisticPars <- par[setdiff(names(par), names(covPars))]
+                         # params <- paramsSeparate(par, parsModel)
+                         # matrix multiplication
+                         # covPars <- params$covPars
+                         # logisticPars <- params$logisticPars
+                         # Make sure the order is correct in the matrix
+                         matching <- intersect(names(covPars), colnames(mat))
+                         missingCovs <- setdiff(colnames(mat), names(covPars))
+                         if (length(missingCovs))
+                           warning("There are covariates in the sim$fireSense_SpreadCovariates: \n",
+                                paste0(missingCovs, collapse = ", "),
+                                "\n...that are not in the sim$studyAreaWithSpreadParams")
+                         mat <- mat[, matching]
+
+                         logisticAll(logisticPars, #fireSense_SpreadCovariates,
+                                     mat, covPars, P(sim)$lowerSpreadProb)
+                       })
+    spreadProbMat <- do.call(cbind, spreadProbList)
+    
+    # spreadProbMat <- spreadProbMat[, which.min(colMeans(spreadProbMat))]
+
+    set(shortAnnDT, NULL, "spreadProb", rowMeans(spreadProbMat))
+
+    # par <- sim$studyAreaWithSpreadParams$params[[1]][1,] |> as.vector() |> unlist()
+    # mat <- as.matrix(fireSense_SpreadCovariates[, ..colsToUse])/1000 # Divide by 1000 for the model prediction
+    #
+    # # matrix multiplication
+    # covPars <- tail(x = par, n = parsModel)
+    # logisticPars <- head(x = par, n = length(par) - parsModel)
+    # # Make sure the order is correct in the matrix
+    # matching <- match(names(covPars), colnames(mat))
+    # mat <- mat[, matching]
+    #
+    # preds <- logisticAll(logisticPars, mat, covPars, P(sim)$lowerSpreadProb)
+    # if (length(logisticPars) == 4) {
+    #   set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic4p(mat %*% covPars, logisticPars))
+    # } else if (length(logisticPars) == 3) {
+    #   set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic3p(mat %*% covPars, logisticPars,
+    #                                                                  par1 = P(sim)$lowerSpreadProb))
+    # } else if (length(logisticPars) == 2) {
+    #   set(fireSense_SpreadCovariates, NULL, "spreadProb", logistic2p(mat %*% covPars, logisticPars,
+    #                                                                  par1 = P(sim)$lowerSpreadProb))
+    # }
+
+    # Return to raster format
+    sim$fireSense_SpreadPredicted <- rast(sim$flammableRTM) ## use flammableRTM as template
+    ## Need to track what is happening with missing pixels
+    if (FALSE) {
+      nFlam <- sum(getValues(sim$flammableRTM), na.rm = TRUE)
+      nLand <- nrow(sim$landcoverDT)
+      nSpread <- nrow(sim$fireSense_SpreadCovariates)
+      nIg <- nrow(sim$fireSense_IgnitionAndEscapeCovariates)
+    }
+    sim$fireSense_SpreadPredicted[shortAnnDT$pixelID] <- shortAnnDT$spreadProb
+
+  }
 
   invisible(sim)
 }
+
+
+
