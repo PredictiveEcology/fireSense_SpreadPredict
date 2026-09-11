@@ -233,6 +233,17 @@ spreadPredictRun <- function(sim) {
     shortAnnDTx1000 <- toX1000(list(fireSense_SpreadCovariates))[[1]] |> setDT()
     colsToUse <- setdiff(names(fireSense_SpreadCovariates), "pixelID")
 
+    # Without fitted parameters there is nothing to predict from; say so instead of
+    # dying in rowMeans() on an empty matrix (which is what an unfitted ELF produced
+    # when fireSense_SpreadFit had not run first). This must come before anything
+    # indexes `params[[1]]`: with zero rows that fails first, "subscript out of bounds".
+    nPar <- tryCatch(NROW(sim$studyAreaWithSpreadParams$params[[1]]), error = function(e) 0L)
+    if (NROW(sim$studyAreaWithSpreadParams) == 0L || is.null(nPar) || nPar == 0L)
+      stop("fireSense_SpreadPredict: sim$studyAreaWithSpreadParams holds no fitted spread ",
+           "parameters for this run (", if (!is.null(sim$.runName)) sim$.runName else "unknown",
+           "). Either fireSense_SpreadFit has not run yet -- its `run` event must precede this ",
+           "module's -- or the shared ledger has no row for this polygon.", call. = FALSE)
+
     logisticPars <- sim$studyAreaWithSpreadParams$params[[1]]
     
     shortAnnDT <- # shortAnnDTx1000 <-
@@ -258,16 +269,6 @@ spreadPredictRun <- function(sim) {
     #                      sa$params[[1]][ind,] |> as.vector() |> unlist()
     #                    })
     mat <- as.matrix(shortAnnDT[, ..colsToUse])
-
-    # Without fitted parameters there is nothing to predict from; say so instead of
-    # dying in rowMeans() on an empty matrix (which is what an unfitted ELF produced
-    # when fireSense_SpreadFit had not run first).
-    nPar <- tryCatch(NROW(sim$studyAreaWithSpreadParams$params[[1]]), error = function(e) 0L)
-    if (NROW(sim$studyAreaWithSpreadParams) == 0L || is.null(nPar) || nPar == 0L)
-      stop("fireSense_SpreadPredict: sim$studyAreaWithSpreadParams holds no fitted spread ",
-           "parameters for this run (", if (!is.null(sim$.runName)) sim$.runName else "unknown",
-           "). Either fireSense_SpreadFit has not run yet -- its `run` event must precede this ",
-           "module's -- or the shared ledger has no row for this polygon.", call. = FALSE)
 
     # for replicate "best" params from DEoptim
     spreadProbList <- purrr::pmap(.l = list(ind = seq(NROW(sim$studyAreaWithSpreadParams$params[[1]]))),
