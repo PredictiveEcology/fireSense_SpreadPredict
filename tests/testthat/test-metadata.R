@@ -33,12 +33,34 @@ test_that("outputs are the expected names and classes", {
   )
 })
 
-test_that("parameters are the expected names", {
-  md <- SpaDES.core::moduleMetadata(module = moduleName, path = modulePath)
-  expect_identical(
-    sort(md$parameters$paramName),
-    sort(c(".runInitialTime", ".runInterval", ".saveInitialTime", ".saveInterval",
-           ".useCache", "coefToUse", "lowerSpreadProb", "maxFireSpread",
-           "mutuallyExclusiveCols"))
+## deparsed defaults, so that a changed default fails as loudly as a renamed parameter
+paramTable <- function(md) {
+  p <- md$parameters
+  out <- data.frame(
+    class = as.character(unlist(p$paramClass)),
+    default = vapply(p$default, function(d) paste(deparse(as.vector(d)), collapse = ""), ""),
+    row.names = p$paramName
   )
+  out[order(rownames(out), method = "radix"), ] # C order, whatever the locale
+}
+
+test_that("parameters have the expected names, classes and defaults", {
+  md <- SpaDES.core::moduleMetadata(module = moduleName, path = modulePath)
+  expected <- data.frame(
+    class   = c("numeric", "numeric", "numeric", "numeric", "logical", "character",
+                "numeric", "numeric", "list"),
+    ## .runInitialTime defaults to start(sim), which is 0 when only metadata is parsed
+    default = c("0", "1", "NA", "NA", "FALSE", "\"meanCoef\"",
+                "0.13", "0.28", "list(youngAge = \"fuels\")"),
+    row.names = c(".runInitialTime", ".runInterval", ".saveInitialTime", ".saveInterval",
+                  ".useCache", "coefToUse", "lowerSpreadProb", "maxFireSpread",
+                  "mutuallyExclusiveCols")
+  )
+  expect_identical(paramTable(md), expected)
+})
+
+test_that("fireSenseUtils is a declared dependency, so CI installs it", {
+  md <- SpaDES.core::moduleMetadata(module = moduleName, path = modulePath)
+  expect_true(any(grepl("^PredictiveEcology/fireSenseUtils@development", unlist(md$reqdPkgs))))
+  expect_identical(md$timeunit, "year")
 })
