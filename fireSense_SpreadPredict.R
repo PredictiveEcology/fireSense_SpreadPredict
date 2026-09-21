@@ -10,14 +10,14 @@ defineModule(sim, list(
     person("Alex M.", "Chubaty", email = "achubaty@for-cast.ca", role = "ctb")
   ),
   childModules = character(),
-  version = list(fireSense_SpreadPredict = "1.0.0.9000", SpaDES.core = "0.1.0"),
+  version = list(fireSense_SpreadPredict = "1.0.0.9001", SpaDES.core = "0.1.0"),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
   documentation = list("README.txt", "fireSense_SpreadPredict.Rmd"),
   reqdPkgs = list("magrittr", "Matrix", "methods", "terra", "SpaDES.core (>=3.0.4)", "stats",
                   "ggplot2", "viridis",
-                  "PredictiveEcology/fireSenseUtils@development (>= 0.1.0)"),
+                  "PredictiveEcology/fireSenseUtils@development (>= 0.2.3.9029)"),
   parameters = bindrows(
     defineParameter(name = "lowerSpreadProb", class = "numeric", default = 0.13,
                     desc = "Lower asymptote of the 2- and 3-parameter logistic."),
@@ -110,6 +110,15 @@ spreadPredictRun <- function(sim) {
   moduleName <- current(sim)$moduleName
 
   fireSense_SpreadCovariates <- copy(sim$fireSense_SpreadCovariates)
+
+  ## Fuel biomass arrives logged (fireSenseUtils::logMinB()). A fit made on LINEAR fuel biomass has
+  ## fireSenseUtils::fuelLinearRange, c(0, 1e4), as that covariate's covMinMax_spread, and its
+  ## coefficients only mean anything for biomass / 1e4: undo the log with the function the fit used.
+  ## A fit made on the log scale has the log range there, and its covariates are left as they are.
+  for (cn in intersect(names(sim$covMinMax_spread), names(fireSense_SpreadCovariates))) {
+    if (fireSenseUtils::isLinearFuelRange(sim$covMinMax_spread[[cn]]))
+      fireSense_SpreadCovariates[[cn]] <- fireSenseUtils::fuelLogToLinear(fireSense_SpreadCovariates[[cn]])
+  }
 
   # Load inputs in the data container
   mod_env <- new.env(parent = globalenv())
