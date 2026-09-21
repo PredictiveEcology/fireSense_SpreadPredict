@@ -1,7 +1,7 @@
 ---
 title: "fireSense_SpreadPredict Manual"
-subtitle: "v.0.0.1"
-date: "Last updated: 2025-04-08"
+subtitle: "v.1.0.0.9000"
+date: "Last updated: 2026-09-21"
 output:
   bookdown::html_document2:
     toc: true
@@ -30,24 +30,28 @@ always_allow_html: true
 
 #### Authors:
 
-Jean Marchal <jean.d.marchal@gmail.com> [aut], Eliot McIntire <eliot.mcintire@nrcan-rncan.gc.ca> [aut, cre], Tati Michelleti <tati.micheletti@gmail.com> [aut], Ian Eddy <ian.eddy@nrcan-rncan.gc.ca> [aut], Alex M. Chubaty <achubaty@for-cast.ca> [ctb]
+Eliot McIntire <eliot.mcintire@nrcan-rncan.gc.ca> [aut, cre], Tati Micheletti <tati.micheletti@gmail.com> [aut], Ian Eddy <ian.eddy@nrcan-rncan.gc.ca> [aut], Jean Marchal <jean.d.marchal@gmail.com> [aut], Alex M. Chubaty <achubaty@for-cast.ca> [ctb]
 <!-- ideally separate authors with new lines, '\n' not working -->
 
 ## Module Overview
 
 ### Module summary
 
-Predicts a surface (raster) of fire spread probabilities using a model previously fit with `fireSense_SpreadFit`.
-fireSense [@Marchal:2017a; @Marchal:2017b; @Marchal:2019] <!-- TODO -->
+Each year, predicts a raster of fire spread probabilities from the parameters fitted by *fireSense_SpreadFit*, for the spread component of fireSense [@Marchal:2017a; @Marchal:2017b; @Marchal:2019].
+
+1. The covariates in `fireSense_SpreadCovariates` are rescaled to [0, 1] using `covMinMax_spread`, the range of the fitting data.
+2. For each parameter set (row) in `studyAreaWithSpreadParams$params[[1]]`, the spread probability is a 2- or 3-parameter logistic of the linear combination of the covariates, with lower asymptote `lowerSpreadProb`.
+3. `fireSense_SpreadPredicted` is the mean over parameter sets, on the `flammableRTM` grid.
 
 ### Module inputs and parameters
 
-Describe input data required by the module and how to obtain it (e.g., directly from online sources or supplied by other modules)
-If `sourceURL` is specified, `downloadData("fireSense_SpreadPredict", "..")` may be sufficient.
+Two objects from *fireSense_SpreadFit* are read from the `simList` though they are not declared as inputs: `studyAreaWithSpreadParams` (the fitted parameters) and `fireSense_spreadFormula` (every term must be a column of `fireSense_SpreadCovariates`).
+The module stops if `studyAreaWithSpreadParams` has no parameters.
+`maxFireSpread` must have the same value in every module that defines it.
 
 Table \@ref(tab:moduleInputs-fireSense-SpreadPredict) shows the full list of module inputs.
 
-<table class="table" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>(\#tab:moduleInputs-fireSense-SpreadPredict)(\#tab:moduleInputs-fireSense-SpreadPredict)List of (ref:fireSense-SpreadPredict) input objects and their description.</caption>
  <thead>
   <tr>
@@ -61,25 +65,19 @@ Table \@ref(tab:moduleInputs-fireSense-SpreadPredict) shows the full list of mod
   <tr>
    <td style="text-align:left;"> covMinMax_spread </td>
    <td style="text-align:left;"> data.table </td>
-   <td style="text-align:left;"> range used to rescale coefficients during spreadFit </td>
+   <td style="text-align:left;"> Minimum and maximum (2 rows) of each covariate in the fitting data, used to rescale the covariates as in `fireSense_SpreadFit`. </td>
    <td style="text-align:left;"> NA </td>
   </tr>
   <tr>
    <td style="text-align:left;"> fireSense_SpreadCovariates </td>
    <td style="text-align:left;"> data.table </td>
-   <td style="text-align:left;"> data.table of covariates with pixelID column corresponding to flammableRTM index. </td>
-   <td style="text-align:left;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> fireSense_SpreadFitted </td>
-   <td style="text-align:left;"> fireSense_SpreadFit </td>
-   <td style="text-align:left;"> An object of class 'fireSense_SpreadFit' created by the fireSense_SpreadFit module. </td>
+   <td style="text-align:left;"> This year's covariates, from `fireSense_dataPrepPredict`. `pixelID` is the cell index of `flammableRTM`. </td>
    <td style="text-align:left;"> NA </td>
   </tr>
   <tr>
    <td style="text-align:left;"> flammableRTM </td>
    <td style="text-align:left;"> SpatRaster </td>
-   <td style="text-align:left;"> RTM with nonflammable pixels coded as 0 and flammable as 1. </td>
+   <td style="text-align:left;"> Binary raster, 1 where the pixel is flammable. Template for `fireSense_SpreadPredicted`. </td>
    <td style="text-align:left;"> NA </td>
   </tr>
 </tbody>
@@ -88,7 +86,7 @@ Table \@ref(tab:moduleInputs-fireSense-SpreadPredict) shows the full list of mod
 Summary of user-visible parameters (Table \@ref(tab:moduleParams-fireSense-SpreadPredict))
 
 
-<table class="table" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>(\#tab:moduleParams-fireSense-SpreadPredict)(\#tab:moduleParams-fireSense-SpreadPredict)List of (ref:fireSense-SpreadPredict) parameters and their description.</caption>
  <thead>
   <tr>
@@ -102,36 +100,20 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-fireSense-Sprea
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> climCol </td>
-   <td style="text-align:left;"> character </td>
-   <td style="text-align:left;"> MDC </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> the name of the climate covariate in `sim$fireSense_spreadCovariates` </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> coefToUse </td>
-   <td style="text-align:left;"> character </td>
-   <td style="text-align:left;"> meanCoef </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> Which coefficient to use to predict? The best coefficient (bestCoef) from DEOPtim or the average (meanCoef; default). </td>
-  </tr>
-  <tr>
    <td style="text-align:left;"> lowerSpreadProb </td>
    <td style="text-align:left;"> numeric </td>
    <td style="text-align:left;"> 0.13 </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> Lower spread probability </td>
+   <td style="text-align:left;"> Lower asymptote of the 2- and 3-parameter logistic. </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> mutuallyExclusiveCols </td>
-   <td style="text-align:left;"> list </td>
-   <td style="text-align:left;"> vegPC </td>
+   <td style="text-align:left;"> maxFireSpread </td>
+   <td style="text-align:left;"> numeric </td>
+   <td style="text-align:left;"> 0.28 </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> a named list, where the name of the list must be a covariate in the data.table. Covariates matching the values in each list element will be set to 0. List content should be a grep regex. </td>
+   <td style="text-align:left;"> Upper limit on `spreadProb` used when fitting. Here it is only checked to be the same in every module that defines it. </td>
   </tr>
   <tr>
    <td style="text-align:left;"> .runInitialTime </td>
@@ -139,7 +121,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-fireSense-Sprea
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> when to start this module? By default, the start time of the simulation. </td>
+   <td style="text-align:left;"> Time of the first prediction. </td>
   </tr>
   <tr>
    <td style="text-align:left;"> .runInterval </td>
@@ -147,7 +129,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-fireSense-Sprea
    <td style="text-align:left;"> 1 </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> optional. Interval between two runs of this module, expressed in units of simulation time.Defaults to 1 year. </td>
+   <td style="text-align:left;"> Interval between predictions, in years. `NA` predicts once. </td>
   </tr>
   <tr>
    <td style="text-align:left;"> .saveInitialTime </td>
@@ -155,15 +137,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-fireSense-Sprea
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> optional. When to start saving output to a file. </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> .saveInterval </td>
-   <td style="text-align:left;"> numeric </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> optional. Interval between save events. </td>
+   <td style="text-align:left;"> Time of the `save` event, which does nothing. `NA` means never. </td>
   </tr>
   <tr>
    <td style="text-align:left;"> .useCache </td>
@@ -177,23 +151,18 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-fireSense-Sprea
 </table>
 
 ### Events
-<!-- TODO -->
-- Module initiation;
-- Make predictions.
 
-### Plotting
+- `init`: checks `maxFireSpread` against the other modules; schedules `run` at `.runInitialTime`, and `save` at `.saveInitialTime` if that is not `NA`.
+- `run`: makes the prediction described above; repeats every `.runInterval`.
+- `save`: does nothing, and says so in a message.
 
-Write what is plotted. <!-- TODO -->
-
-### Saving
-
-There is currently nothing saved, but this may change in the future. <!-- TODO -->
+The module does not plot anything.
 
 ### Module outputs
 
 Description of the module outputs (Table \@ref(tab:moduleOutputs-fireSense-SpreadPredict)).
 
-<table class="table" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>(\#tab:moduleOutputs-fireSense-SpreadPredict)(\#tab:moduleOutputs-fireSense-SpreadPredict)List of (ref:fireSense-SpreadPredict) outputs and their description.</caption>
  <thead>
   <tr>
@@ -206,14 +175,15 @@ Description of the module outputs (Table \@ref(tab:moduleOutputs-fireSense-Sprea
   <tr>
    <td style="text-align:left;"> fireSense_SpreadPredicted </td>
    <td style="text-align:left;"> SpatRaster </td>
-   <td style="text-align:left;"> A raster layer of spread probabilities </td>
+   <td style="text-align:left;"> Spread probability of each flammable pixel, this year. </td>
   </tr>
 </tbody>
 </table>
 
-# Links to other modules
+### Links to other modules
 
-Predictions made with this module can be used with the fire spread component of landscape fire models (e.g., `fireSense`). <!-- TODO -->
+Runs after *fireSense_dataPrepPredict* (covariates) and *fireSense_SpreadFit* (parameters). `fireSense_SpreadPredicted` is used by *fireSense* to spread fires.
+It is normally run as part of the [fireSense](https://github.com/PredictiveEcology/fireSense) module group.
 
 ### Getting help
 

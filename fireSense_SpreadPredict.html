@@ -2995,7 +2995,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">fireSense_SpreadPredict Manual</h1>
 <h3 class="subtitle">v.1.0.0.9000</h3>
-<h4 class="date">Last updated: 2026-09-11</h4>
+<h4 class="date">Last updated: 2026-09-21</h4>
 
 </div>
 
@@ -3015,13 +3015,18 @@ border-radius: 0px;
 <h2>Module Overview</h2>
 <div id="module-summary" class="section level3">
 <h3>Module summary</h3>
-<p>Predicts a surface (raster) of fire spread probabilities using a model previously fit with <code>fireSense_SpreadFit</code>.
-fireSense <span class="citation">(<a href="#ref-Marchal:2017a">Marchal, Steve G. Cumming, et al. 2017b</a>; <a href="#ref-Marchal:2017b">Marchal, Steve G. Cumming, et al. 2017a</a>; <a href="#ref-Marchal:2019">Marchal et al. 2019</a>)</span> <!-- TODO --></p>
+<p>Each year, predicts a raster of fire spread probabilities from the parameters fitted by <em>fireSense_SpreadFit</em>, for the spread component of fireSense <span class="citation">(<a href="#ref-Marchal:2017a">Marchal, Steve G. Cumming, et al. 2017b</a>; <a href="#ref-Marchal:2017b">Marchal, Steve G. Cumming, et al. 2017a</a>; <a href="#ref-Marchal:2019">Marchal et al. 2019</a>)</span>.</p>
+<ol style="list-style-type: decimal">
+<li>The covariates in <code>fireSense_SpreadCovariates</code> are rescaled to [0, 1] using <code>covMinMax_spread</code>, the range of the fitting data.</li>
+<li>For each parameter set (row) in <code>studyAreaWithSpreadParams$params[[1]]</code>, the spread probability is a 2- or 3-parameter logistic of the linear combination of the covariates, with lower asymptote <code>lowerSpreadProb</code>.</li>
+<li><code>fireSense_SpreadPredicted</code> is the mean over parameter sets, on the <code>flammableRTM</code> grid.</li>
+</ol>
 </div>
 <div id="module-inputs-and-parameters" class="section level3">
 <h3>Module inputs and parameters</h3>
-<p>Describe input data required by the module and how to obtain it (e.g., directly from online sources or supplied by other modules)
-If <code>sourceURL</code> is specified, <code>downloadData(&quot;fireSense_SpreadPredict&quot;, &quot;..&quot;)</code> may be sufficient.</p>
+<p>Two objects from <em>fireSense_SpreadFit</em> are read from the <code>simList</code> though they are not declared as inputs: <code>studyAreaWithSpreadParams</code> (the fitted parameters) and <code>fireSense_spreadFormula</code> (every term must be a column of <code>fireSense_SpreadCovariates</code>).
+The module stops if <code>studyAreaWithSpreadParams</code> has no parameters.
+<code>maxFireSpread</code> must have the same value in every module that defines it.</p>
 <p>Table <a href="#tab:moduleInputs-fireSense-SpreadPredict">1</a> shows the full list of module inputs.</p>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
@@ -3052,7 +3057,7 @@ covMinMax_spread
 data.table
 </td>
 <td style="text-align:left;">
-range used to rescale coefficients during spreadFit
+Minimum and maximum (2 rows) of each covariate in the fitting data, used to rescale the covariates as in <code>fireSense_SpreadFit</code>.
 </td>
 <td style="text-align:left;">
 NA
@@ -3066,21 +3071,7 @@ fireSense_SpreadCovariates
 data.table
 </td>
 <td style="text-align:left;">
-data.table of covariates with pixelID column corresponding to flammableRTM index.
-</td>
-<td style="text-align:left;">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-fireSense_SpreadFitted
-</td>
-<td style="text-align:left;">
-fireSense_SpreadFit
-</td>
-<td style="text-align:left;">
-An object of class ‘fireSense_SpreadFit’ created by the fireSense_SpreadFit module.
+This year’s covariates, from <code>fireSense_dataPrepPredict</code>. <code>pixelID</code> is the cell index of <code>flammableRTM</code>.
 </td>
 <td style="text-align:left;">
 NA
@@ -3094,7 +3085,7 @@ flammableRTM
 SpatRaster
 </td>
 <td style="text-align:left;">
-RTM with nonflammable pixels coded as 0 and flammable as 1.
+Binary raster, 1 where the pixel is flammable. Template for <code>fireSense_SpreadPredicted</code>.
 </td>
 <td style="text-align:left;">
 NA
@@ -3132,26 +3123,6 @@ paramDesc
 <tbody>
 <tr>
 <td style="text-align:left;">
-coefToUse
-</td>
-<td style="text-align:left;">
-character
-</td>
-<td style="text-align:left;">
-meanCoef
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-Which coefficient to use to predict? The best coefficient (bestCoef) from DEOPtim or the average (meanCoef; default).
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 lowerSpreadProb
 </td>
 <td style="text-align:left;">
@@ -3167,7 +3138,7 @@ NA
 NA
 </td>
 <td style="text-align:left;">
-Lower spread probability
+Lower asymptote of the 2- and 3-parameter logistic.
 </td>
 </tr>
 <tr>
@@ -3187,27 +3158,7 @@ NA
 NA
 </td>
 <td style="text-align:left;">
-optional. Maximum fire spread average to be passed to the <code>.objFun</code>.This puts an upper limit on <code>spreadProb</code> during optimization. Expected to be same as fireSpread_SpreadFit parameter value
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-mutuallyExclusiveCols
-</td>
-<td style="text-align:left;">
-list
-</td>
-<td style="text-align:left;">
-fuels
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-a named list, where the name of the list must be a covariate in the data.table. Covariates matching the values in each list element will be set to 0. List content should be a grep regex.
+Upper limit on <code>spreadProb</code> used when fitting. Here it is only checked to be the same in every module that defines it.
 </td>
 </tr>
 <tr>
@@ -3227,7 +3178,7 @@ NA
 NA
 </td>
 <td style="text-align:left;">
-when to start this module? By default, the start time of the simulation.
+Time of the first prediction.
 </td>
 </tr>
 <tr>
@@ -3247,7 +3198,7 @@ NA
 NA
 </td>
 <td style="text-align:left;">
-optional. Interval between two runs of this module, expressed in units of simulation time.Defaults to 1 year.
+Interval between predictions, in years. <code>NA</code> predicts once.
 </td>
 </tr>
 <tr>
@@ -3267,27 +3218,7 @@ NA
 NA
 </td>
 <td style="text-align:left;">
-optional. When to start saving output to a file.
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-.saveInterval
-</td>
-<td style="text-align:left;">
-numeric
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-optional. Interval between save events.
+Time of the <code>save</code> event, which does nothing. <code>NA</code> means never.
 </td>
 </tr>
 <tr>
@@ -3315,19 +3246,12 @@ Should this entire module be run with caching activated? This is generally inten
 </div>
 <div id="events" class="section level3">
 <h3>Events</h3>
-<!-- TODO -->
 <ul>
-<li>Module initiation;</li>
-<li>Make predictions.</li>
+<li><code>init</code>: checks <code>maxFireSpread</code> against the other modules; schedules <code>run</code> at <code>.runInitialTime</code>, and <code>save</code> at <code>.saveInitialTime</code> if that is not <code>NA</code>.</li>
+<li><code>run</code>: makes the prediction described above; repeats every <code>.runInterval</code>.</li>
+<li><code>save</code>: does nothing, and says so in a message.</li>
 </ul>
-</div>
-<div id="plotting" class="section level3">
-<h3>Plotting</h3>
-<p>Write what is plotted. <!-- TODO --></p>
-</div>
-<div id="saving" class="section level3">
-<h3>Saving</h3>
-<p>There is currently nothing saved, but this may change in the future. <!-- TODO --></p>
+<p>The module does not plot anything.</p>
 </div>
 <div id="module-outputs" class="section level3">
 <h3>Module outputs</h3>
@@ -3358,7 +3282,7 @@ fireSense_SpreadPredicted
 SpatRaster
 </td>
 <td style="text-align:left;">
-A raster layer of spread probabilities
+Spread probability of each flammable pixel, this year.
 </td>
 </tr>
 </tbody>
@@ -3366,7 +3290,8 @@ A raster layer of spread probabilities
 </div>
 <div id="links-to-other-modules" class="section level3">
 <h3>Links to other modules</h3>
-<p>Predictions made with this module can be used with the fire spread component of landscape fire models (e.g., <code>fireSense</code>). <!-- TODO --></p>
+<p>Runs after <em>fireSense_dataPrepPredict</em> (covariates) and <em>fireSense_SpreadFit</em> (parameters). <code>fireSense_SpreadPredicted</code> is used by <em>fireSense</em> to spread fires.
+It is normally run as part of the <a href="https://github.com/PredictiveEcology/fireSense">fireSense</a> module group.</p>
 </div>
 <div id="getting-help" class="section level3">
 <h3>Getting help</h3>
