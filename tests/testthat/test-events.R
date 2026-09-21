@@ -33,6 +33,19 @@ test_that("no save event is scheduled when .saveInitialTime is NA (the default)"
   expect_identical(nrow(evOf(SpaDES.core::events(sim), "save")), 0L)
 })
 
+test_that("the save event says it does nothing, and leaves sim as it was", {
+  ref <- toyRun(times = list(start = 1, end = 2))
+  expect_message(
+    sim <- toyRun(params = list(.saveInitialTime = 1), times = list(start = 1, end = 2)),
+    "the save event does nothing", fixed = TRUE
+  )
+  expect_equal(evOf(SpaDES.core::completed(sim), "save")$eventTime, 1)
+  ## same objects, same prediction, same queue: it is not rescheduled either
+  expect_identical(sort(ls(sim)), sort(ls(ref)))
+  expect_identical(predVals(sim), predVals(ref))
+  expect_identical(as.data.frame(SpaDES.core::events(sim)), as.data.frame(SpaDES.core::events(ref)))
+})
+
 test_that("nothing is predicted before the first run event", {
   sim <- toyRun(params = list(.runInitialTime = 5), times = list(start = 1, end = 2))
   expect_null(sim$fireSense_SpreadPredicted)

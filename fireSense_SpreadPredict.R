@@ -19,24 +19,17 @@ defineModule(sim, list(
                   "ggplot2", "viridis",
                   "PredictiveEcology/fireSenseUtils@development (>= 0.1.0)"),
   parameters = bindrows(
-    defineParameter(name = "coefToUse", class = "character", default = "meanCoef",
-                    desc = paste("Not used. Predictions are the mean over all parameter sets in",
-                                 "`studyAreaWithSpreadParams`.")),
     defineParameter(name = "lowerSpreadProb", class = "numeric", default = 0.13,
                     desc = "Lower asymptote of the 2- and 3-parameter logistic."),
     defineParameter("maxFireSpread", "numeric", default = 0.28,
                     desc = paste("Upper limit on `spreadProb` used when fitting. Here it is only checked",
                                  "to be the same in every module that defines it.")),
-    defineParameter(name = "mutuallyExclusiveCols", "list", default = list("youngAge" = "fuels"), NA, NA,
-                    desc = "Not used; mutual exclusion is done in `fireSense_dataPrepPredict`."),
     defineParameter(name = ".runInitialTime", class = "numeric", default = start(sim),
                     desc = "Time of the first prediction."),
     defineParameter(name = ".runInterval", class = "numeric", default = 1,
                     desc = "Interval between predictions, in years. `NA` predicts once."),
     defineParameter(name = ".saveInitialTime", class = "numeric", default = NA,
-                    desc = "Time of the first `save` event. `NA` means never."),
-    defineParameter(name = ".saveInterval", class = "numeric", default = NA,
-                    desc = "Interval between `save` events."),
+                    desc = "Time of the `save` event, which does nothing. `NA` means never."),
     defineParameter(".useCache", "logical", FALSE, NA, NA,
                     paste("Should this entire module be run with caching activated?",
                           "This is generally intended for data-type modules, where stochasticity and time are not relevant"))
@@ -48,8 +41,6 @@ defineModule(sim, list(
     expectsInput(objectName = "fireSense_SpreadCovariates", objectClass = "data.table",
                  desc = paste("This year's covariates, from `fireSense_dataPrepPredict`.",
                               "`pixelID` is the cell index of `flammableRTM`.")),
-    expectsInput(objectName = "fireSense_SpreadFitted", objectClass = "fireSense_SpreadFit",
-                 desc = "Not used. The fitted parameters are read from `studyAreaWithSpreadParams`."),
     expectsInput(objectName = "flammableRTM", objectClass = "SpatRaster", sourceURL = NA,
                  desc = "Binary raster, 1 where the pixel is flammable. Template for `fireSense_SpreadPredicted`.")
   ),
@@ -61,7 +52,7 @@ defineModule(sim, list(
 
 #' Event dispatcher
 #'
-#' Events: `init`, `run` (predict, repeated every `.runInterval`), `save`.
+#' Events: `init`, `run` (predict, repeated every `.runInterval`), `save` (does nothing).
 #'
 #' @param sim A `simList`.
 #' @param eventTime Time of the event.
@@ -95,11 +86,7 @@ doEvent.fireSense_SpreadPredict <- function(sim, eventTime, eventType, debug = F
       }
     },
     save = {
-      sim <- spreadPredictSave(sim)
-
-      if (!is.na(P(sim)$.saveInterval)) {
-        sim <- scheduleEvent(sim, time(sim) + P(sim)$.saveInterval, moduleName, "save", .last())
-      }
+      message("fireSense_SpreadPredict: the save event does nothing")
     },
     warning(paste("Undefined event type: '", current(sim)[1, "eventType", with = FALSE],
                   "' in module '", current(sim)[1, "moduleName", with = FALSE], "'",

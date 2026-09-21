@@ -19,7 +19,6 @@ test_that("inputs are the expected names and classes", {
     inputs[order(names(inputs))],
     c(covMinMax_spread           = "data.table",
       fireSense_SpreadCovariates = "data.table",
-      fireSense_SpreadFitted     = "fireSense_SpreadFit",
       flammableRTM               = "SpatRaster")
   )
 })
@@ -47,14 +46,11 @@ paramTable <- function(md) {
 test_that("parameters have the expected names, classes and defaults", {
   md <- SpaDES.core::moduleMetadata(module = moduleName, path = modulePath)
   expected <- data.frame(
-    class   = c("numeric", "numeric", "numeric", "numeric", "logical", "character",
-                "numeric", "numeric", "list"),
+    class   = c("numeric", "numeric", "numeric", "logical", "numeric", "numeric"),
     ## .runInitialTime defaults to start(sim), which is 0 when only metadata is parsed
-    default = c("0", "1", "NA", "NA", "FALSE", "\"meanCoef\"",
-                "0.13", "0.28", "list(youngAge = \"fuels\")"),
-    row.names = c(".runInitialTime", ".runInterval", ".saveInitialTime", ".saveInterval",
-                  ".useCache", "coefToUse", "lowerSpreadProb", "maxFireSpread",
-                  "mutuallyExclusiveCols")
+    default = c("0", "1", "NA", "FALSE", "0.13", "0.28"),
+    row.names = c(".runInitialTime", ".runInterval", ".saveInitialTime", ".useCache",
+                  "lowerSpreadProb", "maxFireSpread")
   )
   expect_identical(paramTable(md), expected)
 })

@@ -79,7 +79,7 @@ knitr::kable(df_params, caption = "List of (ref:fireSense-SpreadPredict) paramet
 
 - `init`: checks `maxFireSpread` against the other modules; schedules `run` at `.runInitialTime`, and `save` at `.saveInitialTime` if that is not `NA`.
 - `run`: makes the prediction described above; repeats every `.runInterval`.
-- `save`: calls `spreadPredictSave()`, which does not exist, so it currently fails. Leave `.saveInitialTime` as `NA`.
+- `save`: does nothing, and says so in a message.
 
 The module does not plot anything.
 
