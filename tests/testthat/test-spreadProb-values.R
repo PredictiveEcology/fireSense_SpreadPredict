@@ -160,3 +160,38 @@ test_that("a covariate with no fitted coefficient is dropped with a warning", {
   ## fuelB contributes nothing
   expect_equal(predVals(sim)[c(1, 3)], c(0.19, 0.2408970), tolerance = 1e-6)
 })
+
+## ---- fuel biomass: linear fits and earlier log fits ------------------------------------------
+## Fuel reaches this module logged (fireSenseUtils::logMinB()). fireSense_SpreadFit now fits it on the
+## linear scale divided by 1e4, and records that as covMinMax_spread = c(0, 1e4) for the fuel column.
+
+test_that("a fit on linear fuel biomass is predicted with biomass / 1e4", {
+  covs <- toyCovariates()
+  ## rows are pixelID 7, 1, 3, 2, 8, 4, 6. Biomass by cell: 1: 0, 2: 0, 3: 5000, 4: 20000, 6: 2500,
+  ## 7: 0, 8: 20000 -- supplied logged, as dataPrepPredict does
+  covs$fuelA <- fireSenseUtils::logMinB(c(0, 0, 5000, 0, 20000, 20000, 2500))
+  ins <- toyInputs(covs = covs)
+  ins$covMinMax_spread$fuelA <- c(0, 1e4)
+  v <- predVals(toyRun(ins))
+  ## x = 1.5 * MDC/200 - 0.5 * youngAge + 1 * biomass/1e4
+  ## cell 1: 0 + 0 + 0 = 0                (absent fuel is exactly 0, not the log floor)
+  ## cell 3: 0.75 + 0.5 = 1.25            cell 4: 1.5 + 2 = 3.5   (biomass/1e4 = 2: above 1, not clamped)
+  ## cell 6: 0.75 + 0.25 = 1              cell 7: 1.125 + 0       cell 8: 0.75 - 0.5 + 2 = 2.25
+  expect_equal(v[c(1, 3, 4, 6, 7, 8)], handLogistic3(c(0, 1.25, 3.5, 1, 1.125, 2.25)), tolerance = 1e-7)
+})
+
+test_that("a fit made on the log scale is predicted on the log scale, as before", {
+  covs <- toyCovariates()
+  lb <- fireSenseUtils::logMinB(c(0, 0, 5000, 0, 20000, 20000, 2500))   # by row: pixelID 7, 1, 3, 2, 8, 4, 6
+  covs$fuelA <- lb
+  ins <- toyInputs(covs = covs)
+  ins$covMinMax_spread$fuelA <- c(3.605, 10)        # the log range an earlier fit stored
+  v <- predVals(toyRun(ins))
+  r <- (lb - 3.605) / (10 - 3.605)                  # rescaled LOG biomass, untouched by fuelLogToLinear()
+  mdc <- covs$MDC / 200; ya <- covs$youngAge
+  ## 1e-5: covariates travel as integers x 1000, so the log floor 3.60517 is 3.605
+  expect_equal(v[covs$pixelID], handLogistic3(1.5 * mdc - 0.5 * ya + r), tolerance = 1e-5)
+  ## and it is NOT what the linear transform would give. Cell 3 has 5000: 0.5 on the linear scale
+  ## (x = 1.25 -> 0.2409) but (8.517 - 3.605) / 6.395 = 0.768 on the log scale (x = 1.518 -> 0.2445)
+  expect_gt(abs(v[3] - handLogistic3(1.25)), 0.003)
+})
