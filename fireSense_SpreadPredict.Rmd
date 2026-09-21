@@ -45,13 +45,17 @@ download.file(url = "https://img.shields.io/badge/Made%20with-Markdown-1f425f.pn
 
 ### Module summary
 
-Predicts a surface (raster) of fire spread probabilities using a model previously fit with `fireSense_SpreadFit`.
-fireSense [@Marchal:2017a; @Marchal:2017b; @Marchal:2019] <!-- TODO -->
+Each year, predicts a raster of fire spread probabilities from the parameters fitted by *fireSense_SpreadFit*, for the spread component of fireSense [@Marchal:2017a; @Marchal:2017b; @Marchal:2019].
+
+1. The covariates in `fireSense_SpreadCovariates` are rescaled to [0, 1] using `covMinMax_spread`, the range of the fitting data.
+2. For each parameter set (row) in `studyAreaWithSpreadParams$params[[1]]`, the spread probability is a 2- or 3-parameter logistic of the linear combination of the covariates, with lower asymptote `lowerSpreadProb`.
+3. `fireSense_SpreadPredicted` is the mean over parameter sets, on the `flammableRTM` grid.
 
 ### Module inputs and parameters
 
-Describe input data required by the module and how to obtain it (e.g., directly from online sources or supplied by other modules)
-If `sourceURL` is specified, `downloadData("fireSense_SpreadPredict", "..")` may be sufficient.
+Two objects from *fireSense_SpreadFit* are read from the `simList` though they are not declared as inputs: `studyAreaWithSpreadParams` (the fitted parameters) and `fireSense_spreadFormula` (every term must be a column of `fireSense_SpreadCovariates`).
+The module stops if `studyAreaWithSpreadParams` has no parameters.
+`maxFireSpread` must have the same value in every module that defines it.
 
 Table \@ref(tab:moduleInputs-fireSense-SpreadPredict) shows the full list of module inputs.
 
@@ -72,17 +76,12 @@ knitr::kable(df_params, caption = "List of (ref:fireSense-SpreadPredict) paramet
 ```
 
 ### Events
-<!-- TODO -->
-- Module initiation;
-- Make predictions.
 
-### Plotting
+- `init`: checks `maxFireSpread` against the other modules; schedules `run` at `.runInitialTime`, and `save` at `.saveInitialTime` if that is not `NA`.
+- `run`: makes the prediction described above; repeats every `.runInterval`.
+- `save`: does nothing, and says so in a message.
 
-Write what is plotted. <!-- TODO -->
-
-### Saving
-
-There is currently nothing saved, but this may change in the future. <!-- TODO -->
+The module does not plot anything.
 
 ### Module outputs
 
@@ -96,7 +95,8 @@ knitr::kable(df_outputs, caption = "List of (ref:fireSense-SpreadPredict) output
 
 ### Links to other modules
 
-Predictions made with this module can be used with the fire spread component of landscape fire models (e.g., `fireSense`). <!-- TODO -->
+Runs after *fireSense_dataPrepPredict* (covariates) and *fireSense_SpreadFit* (parameters). `fireSense_SpreadPredicted` is used by *fireSense* to spread fires.
+It is normally run as part of the [fireSense](https://github.com/PredictiveEcology/fireSense) module group.
 
 ### Getting help
 
