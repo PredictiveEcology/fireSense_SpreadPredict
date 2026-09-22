@@ -195,3 +195,23 @@ test_that("a fit made on the log scale is predicted on the log scale, as before"
   ## (x = 1.25 -> 0.2409) but (8.517 - 3.605) / 6.395 = 0.768 on the log scale (x = 1.518 -> 0.2445)
   expect_gt(abs(v[3] - handLogistic3(1.25)), 0.003)
 })
+
+test_that("a fit with upperTail1 is predicted with the upper-tail link, from the parameter's name", {
+  ## fireSense_SpreadFit's link "logistic3pUpper" stores one more logistic parameter, upperTail1
+  ## (fireSenseUtils::logistic3pUpper(), Stukel 1988). It changes the curve only where
+  ## hillSlope1 * x > 0: there u = hillSlope1 * x becomes -log(1 - a * u) / a for a < 0.
+  v <- predVals(toyRun(toyInputs(params = toyParams(upperTail1 = -0.5))))
+  handUpper <- function(x, a = -0.5) {
+    u <- 2 * x
+    u[u > 0] <- -log(1 - a * u[u > 0]) / a
+    0.13 + 0.12 / (1 + exp(-u))
+  }
+  ## cell 4: x = 2.5, u = 5 -> 2 * log(3.5) = 2.505526 -> 0.13 + 0.12 * 0.9245283 = 0.2409434
+  expect_equal(v[4], 0.2409434, tolerance = 1e-6)
+  expect_equal(v[c(1, 3, 4, 6, 7, 8)], handUpper(c(0, 1.25, 2.5, 1, 1.125, 1.25)), tolerance = 1e-7)
+  ## below the inflection nothing changes: cell 2 (x = -0.125) is the logistic3p value
+  expect_equal(v[2], 0.1825388, tolerance = 1e-6)
+  ## and upperTail1 = 0 is logistic3p everywhere
+  v0 <- predVals(toyRun(toyInputs(params = toyParams(upperTail1 = 0))))
+  expect_equal(v0, predVals(toyRun()), tolerance = 1e-12)
+})

@@ -1,3 +1,7 @@
+# fireSense_SpreadPredict (development version)
+
+- A fit made with fireSense_SpreadFit's `link = "logistic3pUpper"` stores `upperTail1`; prediction uses the upper-tail link for it, chosen by the parameter's name (`fireSenseUtils::logisticAll()`). Needs fireSenseUtils >= 0.2.3.9038.
+
 # fireSense_SpreadPredict 1.0.0
 
 First release from `development` since `master` was last updated (2021-01-27). Full history: https://github.com/PredictiveEcology/fireSense_SpreadPredict/compare/a5b41f9...v1.0.0
