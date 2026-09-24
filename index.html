@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">fireSense_SpreadPredict</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.0.9003</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.0.9004</span>
       </span>
     </div>
 
@@ -150,6 +150,20 @@ NA
 </tr>
 <tr>
 <td style="text-align:left;">
+rasterToMatchLargeELF
+</td>
+<td style="text-align:left;">
+SpatRaster
+</td>
+<td style="text-align:left;">
+Only with several fitted ELFs: each pixel’s ELF (<code>ELFind</code>), on the grid of <code>flammableRTM</code>, from <code>fireSense_ELFs</code> with a <code>studyAreaLarge</code>.
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 flammableRTM
 </td>
 <td style="text-align:left;">
@@ -208,6 +222,26 @@ NA
 </td>
 <td style="text-align:left;">
 Lower asymptote of the 2- and 3-parameter logistic.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ELFblendWidth
+</td>
+<td style="text-align:left;">
+numeric
+</td>
+<td style="text-align:left;">
+20000
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+With several ELFs: each ELF’s model also predicts this far (m) outside its own pixels, and where predictions overlap they are averaged with weights that fall linearly from 1 inside the ELF to 0 at this distance outside it. 50/50 at a boundary. The default is the buffer fireSenseUtils::makeELFs() puts around ELFs.
 </td>
 </tr>
 <tr>
