@@ -1,6 +1,6 @@
 ---
 title: "fireSense_SpreadPredict Manual"
-subtitle: "v.1.0.0.9003"
+subtitle: "v.1.0.0.9004"
 date: "Last updated: 2026-09-24"
 output:
   bookdown::html_document2:
@@ -190,6 +190,11 @@ Description of the module outputs (Table \@ref(tab:moduleOutputs-fireSense-Sprea
    <td style="text-align:left;"> fireSense_SpreadPredicted </td>
    <td style="text-align:left;"> SpatRaster </td>
    <td style="text-align:left;"> Spread probability of each flammable pixel, this year. </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> fireSense_SpreadSD </td>
+   <td style="text-align:left;"> SpatRaster&amp;#124;numeric </td>
+   <td style="text-align:left;"> The fitted sd of the per-year random effect on logit spread probability (`yearSpreadSD`; 0 if the fit has none), for `fireSense`. One number with one fitted ELF; with several, a raster blended across ELFs with the weights of `fireSense_SpreadPredicted`. </td>
   </tr>
 </tbody>
 </table>
