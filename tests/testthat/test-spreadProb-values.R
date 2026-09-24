@@ -215,3 +215,13 @@ test_that("a fit with upperTail1 is predicted with the upper-tail link, from the
   v0 <- predVals(toyRun(toyInputs(params = toyParams(upperTail1 = 0))))
   expect_equal(v0, predVals(toyRun()), tolerance = 1e-12)
 })
+
+test_that("one ELF: yearSpreadSD is not a coefficient; fireSense_SpreadSD is its mean over parameter sets", {
+  base <- toyRun()
+  p2 <- rbind(toyParams(), toyParams())
+  p2$yearSpreadSD <- c(0.3, 0.5)
+  sim <- toyRun(toyInputs(params = p2))
+  expect_equal(predVals(sim), predVals(base), tolerance = 1e-12)
+  expect_equal(sim$fireSense_SpreadSD, 0.4)
+  expect_identical(toyRun()$fireSense_SpreadSD, 0)
+})

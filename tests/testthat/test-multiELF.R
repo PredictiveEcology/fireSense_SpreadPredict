@@ -49,3 +49,25 @@ test_that("with several ELFs, a missing ELF raster stops with a message that say
   ins <- multiInputs(); ins$rasterToMatchLargeELF <- NULL
   expect_error(toyRun(ins), "rasterToMatchLargeELF")
 })
+
+## ---- the per-year random effect (yearSpreadSD) ----
+withSD <- function(inputs, sds) {
+  inputs$studyAreaWithSpreadParams$params <- Map(function(p, s) { p$yearSpreadSD <- s; p },
+                                                 inputs$studyAreaWithSpreadParams$params, sds)
+  inputs
+}
+
+test_that("yearSpreadSD does not change the spread probability, and is blended into fireSense_SpreadSD", {
+  base <- toyRun(multiInputs(), params = list(ELFblendWidth = 20000))
+  sim <- toyRun(withSD(multiInputs(), c(0.2, 0.6)), params = list(ELFblendWidth = 20000))
+  expect_equal(predVals(sim), predVals(base), tolerance = 1e-12)
+  sdv <- terra::values(sim$fireSense_SpreadSD, mat = FALSE)
+  rA <- c(1, 1, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0); rB <- rev(rA)
+  expect_equal(sdv, (rA * 0.2 + rB * 0.6) / (rA + rB), tolerance = 1e-9)   # the probabilities' weights
+  expect_equal(sdv[c(1, 10)], c(0.2, 0.6))
+})
+
+test_that("without yearSpreadSD in the fits the sd is 0 everywhere", {
+  sim <- toyRun(multiInputs(), params = list(ELFblendWidth = 20000))
+  expect_true(all(terra::values(sim$fireSense_SpreadSD, mat = FALSE) == 0))
+})
