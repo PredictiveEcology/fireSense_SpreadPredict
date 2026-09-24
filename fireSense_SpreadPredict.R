@@ -10,7 +10,7 @@ defineModule(sim, list(
     person("Alex M.", "Chubaty", email = "achubaty@for-cast.ca", role = "ctb")
   ),
   childModules = character(),
-  version = list(fireSense_SpreadPredict = "1.0.0.9003", SpaDES.core = "0.1.0"),
+  version = list(fireSense_SpreadPredict = "1.0.0.9004", SpaDES.core = "0.1.0"),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
@@ -54,7 +54,12 @@ defineModule(sim, list(
   ),
   outputObjects = bindrows(
     createsOutput(objectName = "fireSense_SpreadPredicted", objectClass = "SpatRaster",
-                  desc = "Spread probability of each flammable pixel, this year.")
+                  desc = "Spread probability of each flammable pixel, this year."),
+    createsOutput(objectName = "fireSense_SpreadSD", objectClass = "SpatRaster|numeric",
+                  desc = paste("The fitted sd of the per-year random effect on logit spread probability",
+                               "(`yearSpreadSD`; 0 if the fit has none), for `fireSense`. One number with one",
+                               "fitted ELF; with several, a raster blended across ELFs with the weights of",
+                               "`fireSense_SpreadPredicted`."))
   ))
 )
 
@@ -139,6 +144,7 @@ spreadPredictRun <- function(sim) {
     pred <- spreadProbOneELF(covs, params = sa$params[[1]], covMinMax = sim$covMinMax_spread,
                              formula = sim$fireSense_spreadFormula, yr = time(sim),
                              maxFireSpread = P(sim)$maxFireSpread, lowerSpreadProb = P(sim)$lowerSpreadProb)
+    sim$fireSense_SpreadSD <- yearSpreadSDOf(sa$params[[1]])
   } else {
     ids <- as.character(sa[[fireSenseUtils::polygonIDTxt]])
     ## each ELF's weight at each pixel: static, so computed once
@@ -150,7 +156,7 @@ spreadPredictRun <- function(sim) {
     if (any(none))
       warning("fireSense_SpreadPredict: ", sum(none), " flammable pixels are more than ",
               P(sim)$ELFblendWidth, " m from every fitted ELF; they get no spread probability", call. = FALSE)
-    acc <- numeric(NROW(covs)); wsum <- numeric(NROW(covs))
+    acc <- numeric(NROW(covs)); wsum <- numeric(NROW(covs)); accSD <- numeric(NROW(covs))
     for (i in seq_along(ids)) {
       these <- which(w[, i] > 0)
       if (!length(these)) next
@@ -159,10 +165,14 @@ spreadPredictRun <- function(sim) {
                             lowerSpreadProb = P(sim)$lowerSpreadProb, byParams = TRUE)
       rows <- these[match(p$pixelID, covs$pixelID[these])]
       acc[rows] <- acc[rows] + w[rows, i] * p$spreadProb
+      accSD[rows] <- accSD[rows] + w[rows, i] * yearSpreadSDOf(sa$params[[i]])
       wsum[rows] <- wsum[rows] + w[rows, i]
     }
     ok <- wsum > 0
     pred <- data.table(pixelID = covs$pixelID[ok], spreadProb = acc[ok] / wsum[ok])
+    ## each ELF's year effect sd, blended like the probabilities: fireSense scales one z per year by it
+    sim$fireSense_SpreadSD <- rast(sim$flammableRTM)
+    sim$fireSense_SpreadSD[covs$pixelID[ok]] <- accSD[ok] / wsum[ok]
   }
 
   # Return to raster format
@@ -226,6 +236,11 @@ spreadProbOneELF <- function(covs, params, covMinMax, formula, yr, maxFireSpread
                              byParams = FALSE) {
   moduleName <- "fireSense_SpreadPredict"
   covs <- copy(covs)
+  ## the per-year random effect is not a covariate coefficient: fireSense applies it (fireSense_SpreadSD)
+  if (yearSpreadSDTxt %in% names(params)) {
+    params <- as.data.frame(params)
+    params[[yearSpreadSDTxt]] <- NULL
+  }
 
   ## Fuel biomass arrives logged (fireSenseUtils::logMinB()). A fit made on LINEAR fuel biomass has
   ## fireSenseUtils::fuelLinearRange, c(0, 1e4), as that covariate's covMinMax_spread, and its
@@ -289,4 +304,18 @@ spreadProbOneELF <- function(covs, params, covMinMax, formula, yr, maxFireSpread
   spreadProbMat <- do.call(cbind, spreadProbList)
 
   data.table(pixelID = shortAnnDT$pixelID, spreadProb = rowMeans(spreadProbMat))
+}
+
+yearSpreadSDTxt <- "yearSpreadSD"
+
+#' The fitted sd of the per-year random effect
+#'
+#' `yearSpreadSD` (fireSense_SpreadFit, fireSenseUtils >= 0.2.3.9041) is one eps per year on logit spread
+#' probability. With several retained parameter sets, their mean, as the spread probabilities are averaged.
+#'
+#' @param params `data.frame` of fitted parameters, one row per retained set.
+#' @return Numeric; 0 when the fit has no `yearSpreadSD`.
+yearSpreadSDOf <- function(params) {
+  if (!yearSpreadSDTxt %in% names(params)) return(0)
+  mean(params[[yearSpreadSDTxt]])
 }
