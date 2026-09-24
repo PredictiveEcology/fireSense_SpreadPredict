@@ -1,7 +1,7 @@
 ---
 title: "fireSense_SpreadPredict Manual"
-subtitle: "v.1.0.0.9001"
-date: "Last updated: 2026-09-21"
+subtitle: "v.1.0.0.9003"
+date: "Last updated: 2026-09-24"
 output:
   bookdown::html_document2:
     toc: true
@@ -77,6 +77,12 @@ Table \@ref(tab:moduleInputs-fireSense-SpreadPredict) shows the full list of mod
    <td style="text-align:left;"> NA </td>
   </tr>
   <tr>
+   <td style="text-align:left;"> rasterToMatchLargeELF </td>
+   <td style="text-align:left;"> SpatRaster </td>
+   <td style="text-align:left;"> Only with several fitted ELFs: each pixel's ELF (`ELFind`), on the grid of `flammableRTM`, from `fireSense_ELFs` with a `studyAreaLarge`. </td>
+   <td style="text-align:left;"> NA </td>
+  </tr>
+  <tr>
    <td style="text-align:left;"> flammableRTM </td>
    <td style="text-align:left;"> SpatRaster </td>
    <td style="text-align:left;"> Binary raster, 1 where the pixel is flammable. Template for `fireSense_SpreadPredicted`. </td>
@@ -108,6 +114,14 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-fireSense-Sprea
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> Lower asymptote of the 2- and 3-parameter logistic. </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> ELFblendWidth </td>
+   <td style="text-align:left;"> numeric </td>
+   <td style="text-align:left;"> 20000 </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> With several ELFs: each ELF's model also predicts this far (m) outside its own pixels, and where predictions overlap they are averaged with weights that fall linearly from 1 inside the ELF to 0 at this distance outside it. 50/50 at a boundary. The default is the buffer fireSenseUtils::makeELFs() puts around ELFs. </td>
   </tr>
   <tr>
    <td style="text-align:left;"> maxFireSpread </td>
