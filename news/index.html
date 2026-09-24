@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">fireSense_SpreadPredict</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.0.9004</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.0.9005</span>
       </span>
     </div>
 
@@ -53,7 +53,8 @@
 
     <div class="section level2">
 <h2 class="page-header" data-toc-text="development version" id="firesense_spreadpredict-development-version">fireSense_SpreadPredict (development version)<a class="anchor" aria-label="anchor" href="#firesense_spreadpredict-development-version"></a></h2>
-<ul><li><p>The fitted per-year random effect (<code>yearSpreadSD</code>, fireSense_SpreadFit / fireSenseUtils &gt;= 0.2.3.9041) is no longer read as a covariate coefficient: with it, a single ELF treated it as a fourth logistic parameter and several ELFs stopped with “‘yearSpreadSD’ not found”. It becomes the new output <code>fireSense_SpreadSD</code>, which fireSense scales one draw per year by: one number with one ELF (the mean over retained parameter sets), a raster blended with the spread probabilities’ weights with several. 0 when the fit has none.</p></li>
+<ul><li><p>New parameter <code>.studyAreaName</code> (default <code>NA</code>), the name PredictiveEcology modules use for the study area. This module does not use it yet.</p></li>
+<li><p>The fitted per-year random effect (<code>yearSpreadSD</code>, fireSense_SpreadFit / fireSenseUtils &gt;= 0.2.3.9041) is no longer read as a covariate coefficient: with it, a single ELF treated it as a fourth logistic parameter and several ELFs stopped with “‘yearSpreadSD’ not found”. It becomes the new output <code>fireSense_SpreadSD</code>, which fireSense scales one draw per year by: one number with one ELF (the mean over retained parameter sets), a raster blended with the spread probabilities’ weights with several. 0 when the fit has none.</p></li>
 <li><p>Several fitted ELFs in one study area. Every pixel gets a spread probability: each ELF’s model (its parameter sets, its <code>covMinMax_spread</code> and only the covariates it was fitted with, from its ledger row) predicts its own pixels and those within <code>ELFblendWidth</code> (default 20 km) of them, and overlapping predictions are averaged with weights falling linearly from 1 inside an ELF to 0 at <code>ELFblendWidth</code> outside it. Each pixel’s ELF comes from the new input <code>rasterToMatchLargeELF</code> (fireSense_ELFs with a <code>studyAreaLarge</code>). One ELF works as before.</p></li>
 <li><p>A fit made with fireSense_SpreadFit’s <code>link = "logistic3pUpper"</code> stores <code>upperTail1</code>; prediction uses the upper-tail link for it, chosen by the parameter’s name (<code><a href="https://rdrr.io/pkg/fireSenseUtils/man/logistic.html" class="external-link">fireSenseUtils::logisticAll()</a></code>). Needs fireSenseUtils &gt;= 0.2.3.9038.</p></li>
 </ul></div>
