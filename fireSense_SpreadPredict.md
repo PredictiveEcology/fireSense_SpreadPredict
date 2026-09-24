@@ -1,6 +1,6 @@
 ---
 title: "fireSense_SpreadPredict Manual"
-subtitle: "v.1.0.0.9004"
+subtitle: "v.1.0.0.9005"
 date: "Last updated: 2026-09-24"
 output:
   bookdown::html_document2:
@@ -152,6 +152,14 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-fireSense-Sprea
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> Time of the `save` event, which does nothing. `NA` means never. </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> .studyAreaName </td>
+   <td style="text-align:left;"> character </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> Human-readable name for the study area used. </td>
   </tr>
   <tr>
    <td style="text-align:left;"> .useCache </td>
