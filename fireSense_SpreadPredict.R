@@ -10,7 +10,7 @@ defineModule(sim, list(
     person("Alex M.", "Chubaty", email = "achubaty@for-cast.ca", role = "ctb")
   ),
   childModules = character(),
-  version = list(fireSense_SpreadPredict = "1.0.0.9004", SpaDES.core = "0.1.0"),
+  version = list(fireSense_SpreadPredict = "1.0.0.9005", SpaDES.core = "0.1.0"),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
@@ -35,6 +35,8 @@ defineModule(sim, list(
                     desc = "Interval between predictions, in years. `NA` predicts once."),
     defineParameter(name = ".saveInitialTime", class = "numeric", default = NA,
                     desc = "Time of the `save` event, which does nothing. `NA` means never."),
+    defineParameter(".studyAreaName", "character", NA, NA, NA,
+                    "Human-readable name for the study area used."),
     defineParameter(".useCache", "logical", FALSE, NA, NA,
                     paste("Should this entire module be run with caching activated?",
                           "This is generally intended for data-type modules, where stochasticity and time are not relevant"))

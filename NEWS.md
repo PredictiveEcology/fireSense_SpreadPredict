@@ -1,5 +1,6 @@
 # fireSense_SpreadPredict (development version)
 
+- New parameter `.studyAreaName` (default `NA`), the name PredictiveEcology modules use for the study area. This module does not use it yet.
 - The fitted per-year random effect (`yearSpreadSD`, fireSense_SpreadFit / fireSenseUtils >= 0.2.3.9041) is no
   longer read as a covariate coefficient: with it, a single ELF treated it as a fourth logistic parameter and several
   ELFs stopped with "'yearSpreadSD' not found". It becomes the new output `fireSense_SpreadSD`, which fireSense
