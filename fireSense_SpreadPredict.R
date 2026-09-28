@@ -10,14 +10,14 @@ defineModule(sim, list(
     person("Alex M.", "Chubaty", email = "achubaty@for-cast.ca", role = "ctb")
   ),
   childModules = character(),
-  version = list(fireSense_SpreadPredict = "1.0.0.9005", SpaDES.core = "0.1.0"),
+  version = list(fireSense_SpreadPredict = "1.0.0.9006", SpaDES.core = "0.1.0"),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
   documentation = list("README.txt", "fireSense_SpreadPredict.Rmd"),
   reqdPkgs = list("magrittr", "Matrix", "methods", "terra", "SpaDES.core (>=3.0.4)", "stats",
                   "ggplot2", "viridis",
-                  "PredictiveEcology/fireSenseUtils@development (>= 0.2.3.9038)"),
+                  "PredictiveEcology/fireSenseUtils@development (>= 0.2.3.9047)"),
   parameters = bindrows(
     defineParameter(name = "lowerSpreadProb", class = "numeric", default = 0.13,
                     desc = "Lower asymptote of the 2- and 3-parameter logistic."),
@@ -248,9 +248,12 @@ spreadProbOneELF <- function(covs, params, covMinMax, formula, yr, maxFireSpread
   ## fireSenseUtils::fuelLinearRange, c(0, 1e4), as that covariate's covMinMax_spread, and its
   ## coefficients only mean anything for biomass / 1e4: undo the log with the function the fit used.
   ## A fit made on the log scale has the log range there, and its covariates are left as they are.
+  fuelCols <- character()
   for (cn in intersect(names(covMinMax), names(covs))) {
-    if (fireSenseUtils::isLinearFuelRange(covMinMax[[cn]]))
+    if (fireSenseUtils::isLinearFuelRange(covMinMax[[cn]])) {
       covs[[cn]] <- fireSenseUtils::fuelLogToLinear(covs[[cn]])
+      fuelCols <- c(fuelCols, cn)
+    }
   }
 
   ## the covariates this ELF was fitted with
@@ -275,11 +278,22 @@ spreadProbOneELF <- function(covs, params, covMinMax, formula, yr, maxFireSpread
   shortAnnDTx1000 <- toX1000(list(covs))[[1]] |> setDT()
   colsToUse <- setdiff(names(covs), "pixelID")
 
+  ## youngAge is mutually exclusive with every other non-climate covariate, exactly as in the fit
+  ## (fireSense_SpreadFit::spreadFitPrep()): wherever youngAge is non-zero, fuel biomass, nfLCC_*
+  ## and treedWetland are zero. fireSenseUtils::fireSenseCovariatesCreate() already applies this
+  ## when the covariates are built, but that must not be this module's only defence -- it is
+  ## re-applied here so a young pixel's covariates are correct regardless of how they arrived.
+  mutuallyExclusive <- if (fireSenseUtils::youngAgeTxt %in% colsToUse) {
+    fireSenseUtils::youngAgeExclusiveCols(colsToUse, fuelCols = fuelCols)
+  } else {
+    NULL
+  }
+
   shortAnnDT <-
     spreadProbFromIntegerCovs(shortAnnDTx1000 = shortAnnDTx1000,
                               yr = yr,
                               covMinMax = covMinMax,
-                              mutuallyExclusive = NULL, # alraedy done in dataPrepPredict
+                              mutuallyExclusive = mutuallyExclusive,
                               colsToUse = colsToUse,
                               doAssertions = FALSE,
                               logisticPars = params,

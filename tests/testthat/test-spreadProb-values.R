@@ -176,8 +176,9 @@ test_that("a fit on linear fuel biomass is predicted with biomass / 1e4", {
   ## x = 1.5 * MDC/200 - 0.5 * youngAge + 1 * biomass/1e4
   ## cell 1: 0 + 0 + 0 = 0                (absent fuel is exactly 0, not the log floor)
   ## cell 3: 0.75 + 0.5 = 1.25            cell 4: 1.5 + 2 = 3.5   (biomass/1e4 = 2: above 1, not clamped)
-  ## cell 6: 0.75 + 0.25 = 1              cell 7: 1.125 + 0       cell 8: 0.75 - 0.5 + 2 = 2.25
-  expect_equal(v[c(1, 3, 4, 6, 7, 8)], handLogistic3(c(0, 1.25, 3.5, 1, 1.125, 2.25)), tolerance = 1e-7)
+  ## cell 6: 0.75 + 0.25 = 1              cell 7: 1.125 + 0
+  ## cell 8: youngAge = 1 zeroes fuelA (mutually exclusive, as in the fit): 0.75 - 0.5 + 0 = 0.25
+  expect_equal(v[c(1, 3, 4, 6, 7, 8)], handLogistic3(c(0, 1.25, 3.5, 1, 1.125, 0.25)), tolerance = 1e-7)
 })
 
 test_that("a fit made on the log scale is predicted on the log scale, as before", {
