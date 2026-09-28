@@ -5,7 +5,7 @@
   fuel biomass and non-forest land-cover columns reached the logistic unchanged instead of being
   zeroed with `youngAge`, as the fit requires. Prediction now derives the same
   `youngAge`-exclusivity rule the fit uses, via the new `fireSenseUtils::youngAgeExclusiveCols()`.
-  Requires `fireSenseUtils@development (>= 0.2.3.9047)`. Version 1.0.0.9006.
+  Requires `fireSenseUtils@development (>= 0.2.3.9048)`. Version 1.0.0.9006.
 - New parameter `.studyAreaName` (default `NA`), the name PredictiveEcology modules use for the study area. This module does not use it yet.
 - The fitted per-year random effect (`yearSpreadSD`, fireSense_SpreadFit / fireSenseUtils >= 0.2.3.9041) is no
   longer read as a covariate coefficient: with it, a single ELF treated it as a fourth logistic parameter and several

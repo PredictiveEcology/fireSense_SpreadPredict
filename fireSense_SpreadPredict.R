@@ -17,7 +17,7 @@ defineModule(sim, list(
   documentation = list("README.txt", "fireSense_SpreadPredict.Rmd"),
   reqdPkgs = list("magrittr", "Matrix", "methods", "terra", "SpaDES.core (>=3.0.4)", "stats",
                   "ggplot2", "viridis",
-                  "PredictiveEcology/fireSenseUtils@development (>= 0.2.3.9047)"),
+                  "PredictiveEcology/fireSenseUtils@development (>= 0.2.3.9048)"),
   parameters = bindrows(
     defineParameter(name = "lowerSpreadProb", class = "numeric", default = 0.13,
                     desc = "Lower asymptote of the 2- and 3-parameter logistic."),
