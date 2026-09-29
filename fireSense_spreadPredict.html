@@ -2994,8 +2994,8 @@ border-radius: 0px;
 
 
 <h1 class="title toc-ignore">fireSense_spreadPredict Manual</h1>
-<h3 class="subtitle">v.1.0.0.9006</h3>
-<h4 class="date">Last updated: 2026-09-28</h4>
+<h3 class="subtitle">v.1.1.1</h3>
+<h4 class="date">Last updated: 2026-09-29</h4>
 
 </div>
 
@@ -3347,7 +3347,7 @@ fireSense_SpreadSD
 SpatRaster&amp;#124;numeric
 </td>
 <td style="text-align:left;">
-The fitted sd of the per-year random effect on logit spread probability (<code>yearSpreadSD</code>; 0 if the fit has none), for <code>fireSense</code>. One number with one fitted ELF; with several, a raster blended across ELFs with the weights of <code>fireSense_SpreadPredicted</code>.
+The fitted sd of the per-year random effect on logit spread probability (<code>yearSpreadSD</code>; 0 if the fit has none), for <code>fireSense_burn</code>. One number with one fitted ELF; with several, a raster blended across ELFs with the weights of <code>fireSense_SpreadPredicted</code>.
 </td>
 </tr>
 </tbody>
@@ -3355,7 +3355,7 @@ The fitted sd of the per-year random effect on logit spread probability (<code>y
 </div>
 <div id="links-to-other-modules" class="section level3">
 <h3>Links to other modules</h3>
-<p>Runs after <em>fireSense_dataPrepPredict</em> (covariates) and <em>fireSense_spreadFit</em> (parameters). <code>fireSense_SpreadPredicted</code> is used by <em>fireSense</em> to spread fires.
+<p>Runs after <em>fireSense_dataPrepPredict</em> (covariates) and <em>fireSense_spreadFit</em> (parameters). <code>fireSense_SpreadPredicted</code> is used by <em>fireSense_burn</em> to spread fires.
 It is normally run as part of the <a href="https://github.com/PredictiveEcology/fireSense">fireSense</a> module group.</p>
 </div>
 <div id="getting-help" class="section level3">
