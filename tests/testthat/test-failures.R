@@ -33,3 +33,16 @@ test_that("a missing spread formula stops", {
   ins$fireSense_spreadFormula <- NULL
   expect_error(toyRun(ins), "argument is not a valid model")
 })
+
+test_that("a fitted coefficient with no covariate stops at once, naming it and the covariates available", {
+  ## a fit made with non-forest groups nfLCC_100_60 and nfLCC_40_50_80; the covariates were built
+  ## with a single group `nf`, so neither coefficient has a column
+  ins <- toyInputs(params = toyParams(nfLCC_100_60 = 1, nfLCC_40_50_80 = 1))
+  expect_error(toyRun(ins), "nfLCC_100_60, nfLCC_40_50_80")
+  expect_error(toyRun(ins), "MDC, youngAge, fuelA")
+  expect_error(toyRun(ins), "non-forest groups")
+  expect_error(toyRun(ins), "differ from the fit's")
+  ## and not the late, unexplained failure
+  err <- tryCatch(toyRun(ins), error = conditionMessage)
+  expect_false(grepl("at least two dimensions", err))
+})

@@ -74,5 +74,5 @@ setCov <- function(covs, pixel, col, value) {
 ## rows of completed()/events() for this module and one event type, as a data.frame
 evOf <- function(dt, type) {
   df <- as.data.frame(dt)
-  df[df$moduleName == "fireSense_SpreadPredict" & df$eventType == type, , drop = FALSE]
+  df[df$moduleName == "fireSense_spreadPredict" & df$eventType == type, , drop = FALSE]
 }

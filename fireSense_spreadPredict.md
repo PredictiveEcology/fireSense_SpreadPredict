@@ -1,5 +1,5 @@
 ---
-title: "fireSense_SpreadPredict Manual"
+title: "fireSense_spreadPredict Manual"
 subtitle: "v.1.0.0.9006"
 date: "Last updated: 2026-09-28"
 output:
@@ -12,15 +12,15 @@ output:
     keep_md: yes
 editor_options:
   chunk_output_type: console
-bibliography: citations/references_fireSense_SpreadPredict.bib
+bibliography: citations/references_fireSense_spreadPredict.bib
 link-citations: true
 always_allow_html: true
 ---
 
-# fireSense_SpreadPredict Module
+# fireSense_spreadPredict Module
 
 <!-- the following are text references used in captions for LaTeX compatibility -->
-(ref:fireSense-SpreadPredict) *fireSense_SpreadPredict*
+(ref:fireSense-spreadPredict) *fireSense_spreadPredict*
 
 
 
@@ -37,7 +37,7 @@ Eliot McIntire <eliot.mcintire@nrcan-rncan.gc.ca> [aut, cre], Tati Micheletti <t
 
 ### Module summary
 
-Each year, predicts a raster of fire spread probabilities from the parameters fitted by *fireSense_SpreadFit*, for the spread component of fireSense [@Marchal:2017a; @Marchal:2017b; @Marchal:2019].
+Each year, predicts a raster of fire spread probabilities from the parameters fitted by *fireSense_spreadFit*, for the spread component of fireSense [@Marchal:2017a; @Marchal:2017b; @Marchal:2019].
 
 1. The covariates in `fireSense_SpreadCovariates` are rescaled to [0, 1] using `covMinMax_spread`, the range of the fitting data.
 2. For each parameter set (row) in `studyAreaWithSpreadParams$params[[1]]`, the spread probability is a 2- or 3-parameter logistic of the linear combination of the covariates, with lower asymptote `lowerSpreadProb`.
@@ -45,14 +45,14 @@ Each year, predicts a raster of fire spread probabilities from the parameters fi
 
 ### Module inputs and parameters
 
-Two objects from *fireSense_SpreadFit* are read from the `simList` though they are not declared as inputs: `studyAreaWithSpreadParams` (the fitted parameters) and `fireSense_spreadFormula` (every term must be a column of `fireSense_SpreadCovariates`).
+Two objects from *fireSense_spreadFit* are read from the `simList` though they are not declared as inputs: `studyAreaWithSpreadParams` (the fitted parameters) and `fireSense_spreadFormula` (every term must be a column of `fireSense_SpreadCovariates`).
 The module stops if `studyAreaWithSpreadParams` has no parameters.
 `maxFireSpread` must have the same value in every module that defines it.
 
-Table \@ref(tab:moduleInputs-fireSense-SpreadPredict) shows the full list of module inputs.
+Table \@ref(tab:moduleInputs-fireSense-spreadPredict) shows the full list of module inputs.
 
 <table class="table" style="margin-left: auto; margin-right: auto;">
-<caption>(\#tab:moduleInputs-fireSense-SpreadPredict)(\#tab:moduleInputs-fireSense-SpreadPredict)List of (ref:fireSense-SpreadPredict) input objects and their description.</caption>
+<caption>(\#tab:moduleInputs-fireSense-spreadPredict)(\#tab:moduleInputs-fireSense-spreadPredict)List of (ref:fireSense-spreadPredict) input objects and their description.</caption>
  <thead>
   <tr>
    <th style="text-align:left;"> objectName </th>
@@ -65,7 +65,7 @@ Table \@ref(tab:moduleInputs-fireSense-SpreadPredict) shows the full list of mod
   <tr>
    <td style="text-align:left;"> covMinMax_spread </td>
    <td style="text-align:left;"> data.table </td>
-   <td style="text-align:left;"> Minimum and maximum (2 rows) of each covariate in the fitting data, used to rescale the covariates as in `fireSense_SpreadFit`. </td>
+   <td style="text-align:left;"> Minimum and maximum (2 rows) of each covariate in the fitting data, used to rescale the covariates as in `fireSense_spreadFit`. </td>
    <td style="text-align:left;"> NA </td>
   </tr>
   <tr>
@@ -89,11 +89,11 @@ Table \@ref(tab:moduleInputs-fireSense-SpreadPredict) shows the full list of mod
 </tbody>
 </table>
 
-Summary of user-visible parameters (Table \@ref(tab:moduleParams-fireSense-SpreadPredict))
+Summary of user-visible parameters (Table \@ref(tab:moduleParams-fireSense-spreadPredict))
 
 
 <table class="table" style="margin-left: auto; margin-right: auto;">
-<caption>(\#tab:moduleParams-fireSense-SpreadPredict)(\#tab:moduleParams-fireSense-SpreadPredict)List of (ref:fireSense-SpreadPredict) parameters and their description.</caption>
+<caption>(\#tab:moduleParams-fireSense-spreadPredict)(\#tab:moduleParams-fireSense-spreadPredict)List of (ref:fireSense-spreadPredict) parameters and their description.</caption>
  <thead>
   <tr>
    <th style="text-align:left;"> paramName </th>
@@ -182,10 +182,10 @@ The module does not plot anything.
 
 ### Module outputs
 
-Description of the module outputs (Table \@ref(tab:moduleOutputs-fireSense-SpreadPredict)).
+Description of the module outputs (Table \@ref(tab:moduleOutputs-fireSense-spreadPredict)).
 
 <table class="table" style="margin-left: auto; margin-right: auto;">
-<caption>(\#tab:moduleOutputs-fireSense-SpreadPredict)(\#tab:moduleOutputs-fireSense-SpreadPredict)List of (ref:fireSense-SpreadPredict) outputs and their description.</caption>
+<caption>(\#tab:moduleOutputs-fireSense-spreadPredict)(\#tab:moduleOutputs-fireSense-spreadPredict)List of (ref:fireSense-spreadPredict) outputs and their description.</caption>
  <thead>
   <tr>
    <th style="text-align:left;"> objectName </th>
@@ -202,19 +202,19 @@ Description of the module outputs (Table \@ref(tab:moduleOutputs-fireSense-Sprea
   <tr>
    <td style="text-align:left;"> fireSense_SpreadSD </td>
    <td style="text-align:left;"> SpatRaster&amp;#124;numeric </td>
-   <td style="text-align:left;"> The fitted sd of the per-year random effect on logit spread probability (`yearSpreadSD`; 0 if the fit has none), for `fireSense`. One number with one fitted ELF; with several, a raster blended across ELFs with the weights of `fireSense_SpreadPredicted`. </td>
+   <td style="text-align:left;"> The fitted sd of the per-year random effect on logit spread probability (`yearSpreadSD`; 0 if the fit has none), for `fireSense_burn`. One number with one fitted ELF; with several, a raster blended across ELFs with the weights of `fireSense_SpreadPredicted`. </td>
   </tr>
 </tbody>
 </table>
 
 ### Links to other modules
 
-Runs after *fireSense_dataPrepPredict* (covariates) and *fireSense_SpreadFit* (parameters). `fireSense_SpreadPredicted` is used by *fireSense* to spread fires.
+Runs after *fireSense_dataPrepPredict* (covariates) and *fireSense_spreadFit* (parameters). `fireSense_SpreadPredicted` is used by *fireSense_burn* to spread fires.
 It is normally run as part of the [fireSense](https://github.com/PredictiveEcology/fireSense) module group.
 
 ### Getting help
 
-- <https://github.com/PredictiveEcology/fireSense_SpreadPredict/issues>
+- <https://github.com/PredictiveEcology/fireSense_spreadPredict/issues>
 
 ## References
 

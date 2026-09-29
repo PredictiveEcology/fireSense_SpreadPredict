@@ -1,6 +1,6 @@
 defineModule(sim, list(
-  name = "fireSense_SpreadPredict",
-  description = "Predicts a surface of fire spread probilities using a model fitted with fireSense_SpreadFit.",
+  name = "fireSense_spreadPredict",
+  description = "Predicts a surface of fire spread probilities using a model fitted with fireSense_spreadFit.",
   keywords = c("fire spread", "fireSense", "predict"),
   authors = c(
     person("Eliot", "McIntire", email = "eliot.mcintire@nrcan-rncan.gc.ca", role = c("aut", "cre")),
@@ -10,11 +10,11 @@ defineModule(sim, list(
     person("Alex M.", "Chubaty", email = "achubaty@for-cast.ca", role = "ctb")
   ),
   childModules = character(),
-  version = list(fireSense_SpreadPredict = "1.0.0.9006", SpaDES.core = "0.1.0"),
+  version = list(fireSense_spreadPredict = "1.1.1", SpaDES.core = "0.1.0"),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
-  documentation = list("README.txt", "fireSense_SpreadPredict.Rmd"),
+  documentation = list("README.txt", "fireSense_spreadPredict.Rmd"),
   reqdPkgs = list("magrittr", "Matrix", "methods", "terra", "SpaDES.core (>=3.0.4)", "stats",
                   "ggplot2", "viridis",
                   "PredictiveEcology/fireSenseUtils@development (>= 0.2.3.9048)"),
@@ -44,7 +44,7 @@ defineModule(sim, list(
   inputObjects = bindrows(
     expectsInput(objectName = "covMinMax_spread", objectClass = "data.table",
                  desc = paste("Minimum and maximum (2 rows) of each covariate in the fitting data,",
-                              "used to rescale the covariates as in `fireSense_SpreadFit`.")),
+                              "used to rescale the covariates as in `fireSense_spreadFit`.")),
     expectsInput(objectName = "fireSense_SpreadCovariates", objectClass = "data.table",
                  desc = paste("This year's covariates, from `fireSense_dataPrepPredict`.",
                               "`pixelID` is the cell index of `flammableRTM`.")),
@@ -59,7 +59,7 @@ defineModule(sim, list(
                   desc = "Spread probability of each flammable pixel, this year."),
     createsOutput(objectName = "fireSense_SpreadSD", objectClass = "SpatRaster|numeric",
                   desc = paste("The fitted sd of the per-year random effect on logit spread probability",
-                               "(`yearSpreadSD`; 0 if the fit has none), for `fireSense`. One number with one",
+                               "(`yearSpreadSD`; 0 if the fit has none), for `fireSense_burn`. One number with one",
                                "fitted ELF; with several, a raster blended across ELFs with the weights of",
                                "`fireSense_SpreadPredicted`."))
   ))
@@ -75,7 +75,7 @@ defineModule(sim, list(
 #' @param debug Not used.
 #'
 #' @return The `simList`, invisibly.
-doEvent.fireSense_SpreadPredict <- function(sim, eventTime, eventType, debug = FALSE) {
+doEvent.fireSense_spreadPredict <- function(sim, eventTime, eventType, debug = FALSE) {
   moduleName <- current(sim)$moduleName
 
   switch(
@@ -101,7 +101,7 @@ doEvent.fireSense_SpreadPredict <- function(sim, eventTime, eventType, debug = F
       }
     },
     save = {
-      message("fireSense_SpreadPredict: the save event does nothing")
+      message("fireSense_spreadPredict: the save event does nothing")
     },
     warning(paste("Undefined event type: '", current(sim)[1, "eventType", with = FALSE],
                   "' in module '", current(sim)[1, "moduleName", with = FALSE], "'",
@@ -133,13 +133,13 @@ spreadPredictRun <- function(sim) {
 
   # Without fitted parameters there is nothing to predict from; say so instead of
   # dying in rowMeans() on an empty matrix (which is what an unfitted ELF produced
-  # when fireSense_SpreadFit had not run first). This must come before anything
+  # when fireSense_spreadFit had not run first). This must come before anything
   # indexes `params[[1]]`: with zero rows that fails first, "subscript out of bounds".
   nPar <- tryCatch(NROW(sa$params[[1]]), error = function(e) 0L)
   if (NROW(sa) == 0L || is.null(nPar) || nPar == 0L)
-    stop("fireSense_SpreadPredict: sim$studyAreaWithSpreadParams holds no fitted spread ",
+    stop("fireSense_spreadPredict: sim$studyAreaWithSpreadParams holds no fitted spread ",
          "parameters for this run (", if (!is.null(sim$.runName)) sim$.runName else "unknown",
-         "). Either fireSense_SpreadFit has not run yet -- its `run` event must precede this ",
+         "). Either fireSense_spreadFit has not run yet -- its `run` event must precede this ",
          "module's -- or the shared ledger has no row for this polygon.", call. = FALSE)
 
   if (NROW(sa) == 1L) {
@@ -156,7 +156,7 @@ spreadPredictRun <- function(sim) {
     w <- mod$ELFweights
     none <- rowSums(w) == 0
     if (any(none))
-      warning("fireSense_SpreadPredict: ", sum(none), " flammable pixels are more than ",
+      warning("fireSense_spreadPredict: ", sum(none), " flammable pixels are more than ",
               P(sim)$ELFblendWidth, " m from every fitted ELF; they get no spread probability", call. = FALSE)
     acc <- numeric(NROW(covs)); wsum <- numeric(NROW(covs)); accSD <- numeric(NROW(covs))
     for (i in seq_along(ids)) {
@@ -172,7 +172,7 @@ spreadPredictRun <- function(sim) {
     }
     ok <- wsum > 0
     pred <- data.table(pixelID = covs$pixelID[ok], spreadProb = acc[ok] / wsum[ok])
-    ## each ELF's year effect sd, blended like the probabilities: fireSense scales one z per year by it
+    ## each ELF's year effect sd, blended like the probabilities: fireSense_burn scales one z per year by it
     sim$fireSense_SpreadSD <- rast(sim$flammableRTM)
     sim$fireSense_SpreadSD[covs$pixelID[ok]] <- accSD[ok] / wsum[ok]
   }
@@ -199,11 +199,11 @@ spreadPredictRun <- function(sim) {
 #'   ELF is within `width`). `attr(, "key")` records `ids` and `pixelID`.
 ELFblendWeights <- function(elfRas, template, pixelID, ids, width) {
   if (is.null(elfRas))
-    stop("fireSense_SpreadPredict: sim$studyAreaWithSpreadParams has several ELFs, so each pixel's ELF ",
+    stop("fireSense_spreadPredict: sim$studyAreaWithSpreadParams has several ELFs, so each pixel's ELF ",
          "must come from sim$rasterToMatchLargeELF (fireSense_ELFs, with a studyAreaLarge); it is missing",
          call. = FALSE)
   if (!isTRUE(terra::compareGeom(elfRas, template, stopOnError = FALSE)))
-    stop("fireSense_SpreadPredict: sim$rasterToMatchLargeELF is not on the grid of sim$flammableRTM",
+    stop("fireSense_spreadPredict: sim$rasterToMatchLargeELF is not on the grid of sim$flammableRTM",
          call. = FALSE)
   r <- elfRas[[1]]
   v <- terra::values(r, mat = FALSE)
@@ -236,9 +236,9 @@ ELFblendWeights <- function(elfRas, template, pixelID, ids, width) {
 #' @return `data.table` with `pixelID` and `spreadProb`, the mean over parameter sets.
 spreadProbOneELF <- function(covs, params, covMinMax, formula, yr, maxFireSpread, lowerSpreadProb,
                              byParams = FALSE) {
-  moduleName <- "fireSense_SpreadPredict"
+  moduleName <- "fireSense_spreadPredict"
   covs <- copy(covs)
-  ## the per-year random effect is not a covariate coefficient: fireSense applies it (fireSense_SpreadSD)
+  ## the per-year random effect is not a covariate coefficient: fireSense_burn applies it (fireSense_SpreadSD)
   if (yearSpreadSDTxt %in% names(params)) {
     params <- as.data.frame(params)
     params[[yearSpreadSDTxt]] <- NULL
@@ -254,6 +254,19 @@ spreadProbOneELF <- function(covs, params, covMinMax, formula, yr, maxFireSpread
       covs[[cn]] <- fireSenseUtils::fuelLogToLinear(covs[[cn]])
       fuelCols <- c(fuelCols, cn)
     }
+  }
+
+  ## every fitted coefficient needs a covariate: without one the logistic gets no covariates and
+  ## fails later in rowMeans(), with no hint of the cause
+  fitted <- setdiff(names(params), unlist(fireSenseUtils::logisticParamNames))
+  noCov <- setdiff(fitted, names(covs))
+  if (length(noCov)) {
+    stop(
+      moduleName, "> the fitted coefficients ", paste(noCov, collapse = ", "),
+      " have no covariate. The covariates available are ",
+      paste(setdiff(names(covs), "pixelID"), collapse = ", "),
+      ". The non-forest groups / fuel classes used to build the covariates differ from the fit's."
+    )
   }
 
   ## the covariates this ELF was fitted with
@@ -279,7 +292,7 @@ spreadProbOneELF <- function(covs, params, covMinMax, formula, yr, maxFireSpread
   colsToUse <- setdiff(names(covs), "pixelID")
 
   ## youngAge is mutually exclusive with every other non-climate covariate, exactly as in the fit
-  ## (fireSense_SpreadFit::spreadFitPrep()): wherever youngAge is non-zero, fuel biomass, nfLCC_*
+  ## (fireSense_spreadFit::spreadFitPrep()): wherever youngAge is non-zero, fuel biomass, nfLCC_*
   ## and treedWetland are zero. fireSenseUtils::fireSenseCovariatesCreate() already applies this
   ## when the covariates are built, but that must not be this module's only defence -- it is
   ## re-applied here so a young pixel's covariates are correct regardless of how they arrived.
@@ -326,7 +339,7 @@ yearSpreadSDTxt <- "yearSpreadSD"
 
 #' The fitted sd of the per-year random effect
 #'
-#' `yearSpreadSD` (fireSense_SpreadFit, fireSenseUtils >= 0.2.3.9041) is one eps per year on logit spread
+#' `yearSpreadSD` (fireSense_spreadFit, fireSenseUtils >= 0.2.3.9041) is one eps per year on logit spread
 #' probability. With several retained parameter sets, their mean, as the spread probabilities are averaged.
 #'
 #' @param params `data.frame` of fitted parameters, one row per retained set.

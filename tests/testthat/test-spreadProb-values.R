@@ -162,7 +162,7 @@ test_that("a covariate with no fitted coefficient is dropped with a warning", {
 })
 
 ## ---- fuel biomass: linear fits and earlier log fits ------------------------------------------
-## Fuel reaches this module logged (fireSenseUtils::logMinB()). fireSense_SpreadFit now fits it on the
+## Fuel reaches this module logged (fireSenseUtils::logMinB()). fireSense_spreadFit now fits it on the
 ## linear scale divided by 1e4, and records that as covMinMax_spread = c(0, 1e4) for the fuel column.
 
 test_that("a fit on linear fuel biomass is predicted with biomass / 1e4", {
@@ -198,7 +198,7 @@ test_that("a fit made on the log scale is predicted on the log scale, as before"
 })
 
 test_that("a fit with upperTail1 is predicted with the upper-tail link, from the parameter's name", {
-  ## fireSense_SpreadFit's link "logistic3pUpper" stores one more logistic parameter, upperTail1
+  ## fireSense_spreadFit's link "logistic3pUpper" stores one more logistic parameter, upperTail1
   ## (fireSenseUtils::logistic3pUpper(), Stukel 1988). It changes the curve only where
   ## hillSlope1 * x > 0: there u = hillSlope1 * x becomes -log(1 - a * u) / a for a < 0.
   v <- predVals(toyRun(toyInputs(params = toyParams(upperTail1 = -0.5))))

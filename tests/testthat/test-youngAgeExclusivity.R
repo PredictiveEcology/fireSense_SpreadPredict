@@ -1,6 +1,6 @@
 ## youngAge must be mutually exclusive with every other non-climate covariate at prediction time,
-## exactly as in the fit (fireSense_SpreadFit::spreadFitPrep()). Before the fix,
-## spreadProbOneELF() (fireSense_SpreadPredict.R:282 pre-fix) called
+## exactly as in the fit (fireSense_spreadFit::spreadFitPrep()). Before the fix,
+## spreadProbOneELF() (fireSense_spreadPredict.R:282 pre-fix) called
 ## fireSenseUtils::spreadProbFromIntegerCovs() with `mutuallyExclusive = NULL`, so a young pixel's
 ## fuel biomass and non-forest land-cover columns reached the link unchanged instead of being
 ## zeroed alongside youngAge = 1.
@@ -14,7 +14,7 @@ test_that("a young pixel's covariates entering the link are youngAge = 1 and all
   formula <- "~ MDC + youngAge + fuelA + nfLCC_40 - 1"
   p <- toyParams(nfLCC_40 = 2)
   ins <- toyInputs(covs = covs, params = p, formula = formula)
-  ins$covMinMax_spread$fuelA <- c(0, 1e4)      # a fit on linear fuel biomass, as fireSense_SpreadFit makes
+  ins$covMinMax_spread$fuelA <- c(0, 1e4)      # a fit on linear fuel biomass, as fireSense_spreadFit makes
   ins$covMinMax_spread$nfLCC_40 <- c(0, 1)
 
   v <- predVals(toyRun(ins))
