@@ -1,4 +1,6 @@
-# fireSense_SpreadPredict (development version)
+# fireSense_spreadPredict (development version)
+
+- Renamed from `fireSense_SpreadPredict` to `fireSense_spreadPredict` (module naming convention `<model>_<camelCaseComponent>`); projects must rename the module and its `params` key. Version 1.1.0.
 
 - `spreadProbOneELF()` (fireSense_SpreadPredict.R:282 pre-fix) called
   `fireSenseUtils::spreadProbFromIntegerCovs()` with `mutuallyExclusive = NULL`, so a young pixel's

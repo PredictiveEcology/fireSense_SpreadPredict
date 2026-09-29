@@ -1,7 +1,7 @@
 ## One `run` event on a tiny landscape, with inputs shaped like the ones the upstream
 ## modules make: covariates from fireSense_dataPrepPredict, the spread formula from
 ## fireSense_dataPrepFit, and `covMinMax_spread` / `studyAreaWithSpreadParams` from
-## fireSense_SpreadFit.
+## fireSense_spreadFit.
 ##
 ## `fireSense_spreadFormula` and `studyAreaWithSpreadParams` are read by the run event but
 ## are not declared in this module's `expectsInput()`; they are supplied here regardless,
