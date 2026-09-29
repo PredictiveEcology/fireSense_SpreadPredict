@@ -10,7 +10,7 @@ defineModule(sim, list(
     person("Alex M.", "Chubaty", email = "achubaty@for-cast.ca", role = "ctb")
   ),
   childModules = character(),
-  version = list(fireSense_spreadPredict = "1.1.0", SpaDES.core = "0.1.0"),
+  version = list(fireSense_spreadPredict = "1.1.1", SpaDES.core = "0.1.0"),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
@@ -254,6 +254,19 @@ spreadProbOneELF <- function(covs, params, covMinMax, formula, yr, maxFireSpread
       covs[[cn]] <- fireSenseUtils::fuelLogToLinear(covs[[cn]])
       fuelCols <- c(fuelCols, cn)
     }
+  }
+
+  ## every fitted coefficient needs a covariate: without one the logistic gets no covariates and
+  ## fails later in rowMeans(), with no hint of the cause
+  fitted <- setdiff(names(params), unlist(fireSenseUtils::logisticParamNames))
+  noCov <- setdiff(fitted, names(covs))
+  if (length(noCov)) {
+    stop(
+      moduleName, "> the fitted coefficients ", paste(noCov, collapse = ", "),
+      " have no covariate. The covariates available are ",
+      paste(setdiff(names(covs), "pixelID"), collapse = ", "),
+      ". The non-forest groups / fuel classes used to build the covariates differ from the fit's."
+    )
   }
 
   ## the covariates this ELF was fitted with
