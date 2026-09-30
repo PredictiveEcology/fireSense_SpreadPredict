@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">fireSense_spreadPredict</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
       </span>
     </div>
 
@@ -53,7 +53,8 @@
 
     <div class="section level2">
 <h2 class="page-header" data-toc-text="development version" id="firesense_spreadpredict-development-version">fireSense_spreadPredict (development version)<a class="anchor" aria-label="anchor" href="#firesense_spreadpredict-development-version"></a></h2>
-<ul><li><p><code><a href="../reference/spreadProbOneELF.html">spreadProbOneELF()</a></code> (fireSense_spreadPredict.R:266-323 pre-fix) went on when a fitted coefficient had no covariate column, and died in <code>rowMeans(spreadProbMat)</code> with “‘x’ must be an array of at least two dimensions” (a predict-only run whose fit had <code>nfLCC_100_60</code> and <code>nfLCC_40_50_80</code> but whose covariates had a single <code>nf</code>). It now stops at once, naming the coefficients without a covariate and the covariates available, and says the non-forest groups / fuel classes differ from the fit’s. Version 1.1.1.</p></li>
+<ul><li><p>reqdPkgs now lists <code>data.table</code>, which the module calls (<code>copy</code>, <code>data.table</code>, <code>setDT</code>) but did not list. Version 1.1.2.</p></li>
+<li><p><code><a href="../reference/spreadProbOneELF.html">spreadProbOneELF()</a></code> (fireSense_spreadPredict.R:266-323 pre-fix) went on when a fitted coefficient had no covariate column, and died in <code>rowMeans(spreadProbMat)</code> with “‘x’ must be an array of at least two dimensions” (a predict-only run whose fit had <code>nfLCC_100_60</code> and <code>nfLCC_40_50_80</code> but whose covariates had a single <code>nf</code>). It now stops at once, naming the coefficients without a covariate and the covariates available, and says the non-forest groups / fuel classes differ from the fit’s. Version 1.1.1.</p></li>
 <li><p>Renamed from <code>fireSense_SpreadPredict</code> to <code>fireSense_spreadPredict</code> (module naming convention <code>&lt;model&gt;_&lt;camelCaseComponent&gt;</code>); projects must rename the module and its <code>params</code> key. Version 1.1.0.</p></li>
 <li><p><code><a href="../reference/spreadProbOneELF.html">spreadProbOneELF()</a></code> (fireSense_SpreadPredict.R:282 pre-fix) called <code><a href="https://rdrr.io/pkg/fireSenseUtils/man/spreadProbFromIntegerCovs.html" class="external-link">fireSenseUtils::spreadProbFromIntegerCovs()</a></code> with <code>mutuallyExclusive = NULL</code>, so a young pixel’s fuel biomass and non-forest land-cover columns reached the logistic unchanged instead of being zeroed with <code>youngAge</code>, as the fit requires. Prediction now derives the same <code>youngAge</code>-exclusivity rule the fit uses, via the new <code><a href="https://rdrr.io/pkg/fireSenseUtils/man/youngAgeExclusiveCols.html" class="external-link">fireSenseUtils::youngAgeExclusiveCols()</a></code>. Requires <code>fireSenseUtils@development (&gt;= 0.2.3.9048)</code>. Version 1.0.0.9006.</p></li>
 <li><p>New parameter <code>.studyAreaName</code> (default <code>NA</code>), the name PredictiveEcology modules use for the study area. This module does not use it yet.</p></li>
