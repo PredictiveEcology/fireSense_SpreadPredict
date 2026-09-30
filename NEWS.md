@@ -1,5 +1,7 @@
 # fireSense_spreadPredict (development version)
 
+- reqdPkgs now lists `data.table`, which the module calls (`copy`, `data.table`, `setDT`) but did not list. Version 1.1.2.
+
 - `spreadProbOneELF()` (fireSense_spreadPredict.R:266-323 pre-fix) went on when a fitted coefficient had no covariate column, and died in `rowMeans(spreadProbMat)` with "'x' must be an array of at least two dimensions" (a predict-only run whose fit had `nfLCC_100_60` and `nfLCC_40_50_80` but whose covariates had a single `nf`). It now stops at once, naming the coefficients without a covariate and the covariates available, and says the non-forest groups / fuel classes differ from the fit's. Version 1.1.1.
 - Renamed from `fireSense_SpreadPredict` to `fireSense_spreadPredict` (module naming convention `<model>_<camelCaseComponent>`); projects must rename the module and its `params` key. Version 1.1.0.
 
