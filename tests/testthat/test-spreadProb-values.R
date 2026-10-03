@@ -2,7 +2,7 @@
 ##
 ## The run event (1) turns covariates into integers x 1000, (2) rescales each to [0, 1] with
 ## the FIT's min/max in `covMinMax_spread`, (3) takes the linear combination with the fitted
-## coefficients, (4) puts it through the logistic, (5) uses one parameter row, chosen by `rep`, and
+## coefficients, (4) puts it through the logistic, (5) uses one parameter row, chosen by `.rep`, and
 ## (6) writes the values to the cells given by `pixelID`.
 
 test_that("spread probability is the logistic of covariates rescaled with the fit's min/max", {

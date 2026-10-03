@@ -1,6 +1,6 @@
 # fireSense_spreadPredict (development version)
 
-- Predictions no longer average parameter sets (`spreadProbOneELF()` took `rowMeans()` of one map per row, and `yearSpreadSDOf()` the mean `yearSpreadSD`, which broke the pairing of each set's `yearSpreadSD` with its own coefficients). New parameter `rep` (integer, default 1): replicate `rep` uses the one whole parameter set `((rep - 1) %% number of sets) + 1` of each ELF, and `fireSense_SpreadSD` is that set's `yearSpreadSD`. The project must pass `rep` (the same name as `fireSense_spreadFit`'s, so `.globals` can set both).
+- Predictions no longer average parameter sets (`spreadProbOneELF()` took `rowMeans()` of one map per row, and `yearSpreadSDOf()` the mean `yearSpreadSD`, which broke the pairing of each set's `yearSpreadSD` with its own coefficients). New parameter `.rep` (integer, default 1): replicate `.rep` uses the one whole parameter set `((rep - 1) %% number of sets) + 1` of each ELF, and `fireSense_SpreadSD` is that set's `yearSpreadSD`. `.rep` is a SpaDES-aware parameter: `SpaDES.project::setupProject()` sets `.globals$.rep` from the experiment's `.rep` (PredictiveEcology/SpaDES.project#190), so nothing needs wiring by hand.
 
 - reqdPkgs now lists `data.table`, which the module calls (`copy`, `data.table`, `setDT`) but did not list. Version 1.1.2.
 

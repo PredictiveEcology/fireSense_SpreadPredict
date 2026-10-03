@@ -29,7 +29,7 @@ defineModule(sim, list(
     defineParameter("maxFireSpread", "numeric", default = 0.28,
                     desc = paste("Upper limit on `spreadProb` used when fitting. Here it is only checked",
                                  "to be the same in every module that defines it.")),
-    defineParameter("rep", "integer", default = 1L, min = 1L, max = NA,
+    defineParameter(".rep", "integer", default = 1L, min = 1L, max = NA,
                     desc = paste("Which replicate this prediction is. It selects parameter set",
                                  "((rep - 1) %% number of sets) + 1 of each ELF, so replicates cycle through the",
                                  "fitted sets, each used whole (with its own `yearSpreadSD`), never averaged.")),
@@ -63,7 +63,7 @@ defineModule(sim, list(
                   desc = "Spread probability of each flammable pixel, this year."),
     createsOutput(objectName = "fireSense_SpreadSD", objectClass = "SpatRaster|numeric",
                   desc = paste("The fitted sd of the per-year random effect on logit spread probability",
-                               "(`yearSpreadSD` of the parameter set chosen by `rep`; 0 if the fit has none), for",
+                               "(`yearSpreadSD` of the parameter set chosen by `.rep`; 0 if the fit has none), for",
                                "`fireSense_burn`. One number with one",
                                "fitted ELF; with several, a raster blended across ELFs with the weights of",
                                "`fireSense_SpreadPredicted`."))
@@ -120,7 +120,7 @@ doEvent.fireSense_spreadPredict <- function(sim, eventTime, eventType, debug = F
 #' Predict this year's spread probability
 #'
 #' Rescales `sim$fireSense_SpreadCovariates` with the fit's covariate ranges, computes the spread
-#' probability with ONE parameter set (row) of the fit, chosen by the `rep` parameter (see
+#' probability with ONE parameter set (row) of the fit, chosen by the `.rep` parameter (see
 #' `paramSetForRep()`), and writes it to `sim$fireSense_SpreadPredicted`. Parameter sets are not averaged.
 #'
 #' With one fitted ELF (one row of `sim$studyAreaWithSpreadParams`) every pixel uses its parameters and
@@ -148,7 +148,7 @@ spreadPredictRun <- function(sim) {
          "module's -- or the shared ledger has no row for this polygon.", call. = FALSE)
 
   if (NROW(sa) == 1L) {
-    params1 <- paramSetForRep(sa$params[[1]], P(sim)$rep)
+    params1 <- paramSetForRep(sa$params[[1]], P(sim)$.rep)
     pred <- spreadProbOneELF(covs, params = params1, covMinMax = sim$covMinMax_spread,
                              formula = sim$fireSense_spreadFormula, yr = time(sim),
                              maxFireSpread = P(sim)$maxFireSpread, lowerSpreadProb = P(sim)$lowerSpreadProb)
@@ -168,7 +168,7 @@ spreadPredictRun <- function(sim) {
     for (i in seq_along(ids)) {
       these <- which(w[, i] > 0)
       if (!length(these)) next
-      parsI <- paramSetForRep(sa$params[[i]], P(sim)$rep)
+      parsI <- paramSetForRep(sa$params[[i]], P(sim)$.rep)
       p <- spreadProbOneELF(covs[these], params = parsI, covMinMax = sa$covMinMax_spread[[i]],
                             formula = NULL, yr = time(sim), maxFireSpread = P(sim)$maxFireSpread,
                             lowerSpreadProb = P(sim)$lowerSpreadProb, byParams = TRUE)
@@ -345,7 +345,7 @@ yearSpreadSDTxt <- "yearSpreadSD"
 #' coefficients and its `yearSpreadSD` stay together. Each ELF takes the modulo of its own number of rows.
 #'
 #' @param params `data.frame` of an ELF's fitted parameter sets, one per row (ledger `params`).
-#' @param rep integer; the replicate (the module parameter `rep`).
+#' @param rep integer; the replicate (the module parameter `.rep`).
 #' @return One-row `data.frame`.
 paramSetForRep <- function(params, rep) {
   params[((rep - 1L) %% NROW(params)) + 1L, , drop = FALSE]
