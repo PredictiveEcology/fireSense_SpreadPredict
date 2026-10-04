@@ -1,7 +1,7 @@
 ---
 title: "fireSense_spreadPredict Manual"
 subtitle: "v.1.1.2"
-date: "Last updated: 2026-09-30"
+date: "Last updated: 2026-10-04"
 output:
   bookdown::html_document2:
     toc: true
@@ -42,8 +42,8 @@ Eliot McIntire <eliot.mcintire@nrcan-rncan.gc.ca> [aut, cre], Tati Micheletti <t
 Each year, predicts a raster of fire spread probabilities from the parameters fitted by *fireSense_spreadFit*, for the spread component of fireSense [@Marchal:2017a; @Marchal:2017b; @Marchal:2019].
 
 1. The covariates in `fireSense_SpreadCovariates` are rescaled to [0, 1] using `covMinMax_spread`, the range of the fitting data.
-2. For each parameter set (row) in `studyAreaWithSpreadParams$params[[1]]`, the spread probability is a 2- or 3-parameter logistic of the linear combination of the covariates, with lower asymptote `lowerSpreadProb`.
-3. `fireSense_SpreadPredicted` is the mean over parameter sets, on the `flammableRTM` grid.
+2. With the one parameter set (row of `studyAreaWithSpreadParams$params[[i]]`) chosen by `.rep`, i.e. row `((rep - 1) %% number of sets) + 1` of each ELF, the spread probability is a 2- or 3-parameter logistic of the linear combination of the covariates, with lower asymptote `lowerSpreadProb`.
+3. `fireSense_SpreadPredicted` is that single set's prediction (sets are not averaged), and `fireSense_SpreadSD` its `yearSpreadSD`, on the `flammableRTM` grid.
 
 ### Module inputs and parameters
 
@@ -132,6 +132,14 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-fireSense-sprea
    <td style="text-align:left;"> Upper limit on `spreadProb` used when fitting. Here it is only checked to be the same in every module that defines it. </td>
   </tr>
   <tr>
+   <td style="text-align:left;"> .rep </td>
+   <td style="text-align:left;"> integer </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> Which replicate this prediction is. It selects parameter set ((rep - 1) %% number of sets) + 1 of each ELF, so replicates cycle through the fitted sets, each used whole (with its own `yearSpreadSD`), never averaged. </td>
+  </tr>
+  <tr>
    <td style="text-align:left;"> .runInitialTime </td>
    <td style="text-align:left;"> numeric </td>
    <td style="text-align:left;"> 0 </td>
@@ -204,7 +212,7 @@ Description of the module outputs (Table \@ref(tab:moduleOutputs-fireSense-sprea
   <tr>
    <td style="text-align:left;"> fireSense_SpreadSD </td>
    <td style="text-align:left;"> SpatRaster&amp;#124;numeric </td>
-   <td style="text-align:left;"> The fitted sd of the per-year random effect on logit spread probability (`yearSpreadSD`; 0 if the fit has none), for `fireSense_burn`. One number with one fitted ELF; with several, a raster blended across ELFs with the weights of `fireSense_SpreadPredicted`. </td>
+   <td style="text-align:left;"> The fitted sd of the per-year random effect on logit spread probability (`yearSpreadSD` of the parameter set chosen by `.rep`; 0 if the fit has none), for `fireSense_burn`. One number with one fitted ELF; with several, a raster blended across ELFs with the weights of `fireSense_SpreadPredicted`. </td>
   </tr>
 </tbody>
 </table>

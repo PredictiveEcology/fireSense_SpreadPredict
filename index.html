@@ -91,9 +91,9 @@
 <p>Each year, predicts a raster of fire spread probabilities from the parameters fitted by <em>fireSense_spreadFit</em>, for the spread component of fireSense [@Marchal:2017a; @Marchal:2017b; @Marchal:2019].</p>
 <ol style="list-style-type: decimal">
 <li>The covariates in <code>fireSense_SpreadCovariates</code> are rescaled to [0, 1] using <code>covMinMax_spread</code>, the range of the fitting data.</li>
-<li>For each parameter set (row) in <code>studyAreaWithSpreadParams$params[[1]]</code>, the spread probability is a 2- or 3-parameter logistic of the linear combination of the covariates, with lower asymptote <code>lowerSpreadProb</code>.</li>
+<li>With the one parameter set (row of <code>studyAreaWithSpreadParams$params[[i]]</code>) chosen by <code>.rep</code>, i.e. row <code>((rep - 1) %% number of sets) + 1</code> of each ELF, the spread probability is a 2- or 3-parameter logistic of the linear combination of the covariates, with lower asymptote <code>lowerSpreadProb</code>.</li>
 <li>
-<code>fireSense_SpreadPredicted</code> is the mean over parameter sets, on the <code>flammableRTM</code> grid.</li>
+<code>fireSense_SpreadPredicted</code> is that single set’s prediction (sets are not averaged), and <code>fireSense_SpreadSD</code> its <code>yearSpreadSD</code>, on the <code>flammableRTM</code> grid.</li>
 </ol>
 </div>
 <div class="section level3">

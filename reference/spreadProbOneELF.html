@@ -79,7 +79,7 @@ makes them; fuel biomass logged).</p></dd>
 
 
 <dt id="arg-params">params<a class="anchor" aria-label="anchor" href="#arg-params"></a></dt>
-<dd><p><code>data.frame</code> of the ELF's fitted parameter sets, one per row (ledger <code>params</code>).</p></dd>
+<dd><p>one-row <code>data.frame</code>: the ELF's parameter set for this replicate (<code><a href="paramSetForRep.html">paramSetForRep()</a></code>).</p></dd>
 
 
 <dt id="arg-covminmax">covMinMax<a class="anchor" aria-label="anchor" href="#arg-covminmax"></a></dt>
@@ -102,7 +102,7 @@ makes them; fuel biomass logged).</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p><code>data.table</code> with <code>pixelID</code> and <code>spreadProb</code>, the mean over parameter sets.</p>
+    <p><code>data.table</code> with <code>pixelID</code> and <code>spreadProb</code>, from the one parameter set in <code>params</code>.</p>
     </div>
 
   </div>
